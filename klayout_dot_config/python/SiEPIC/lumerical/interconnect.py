@@ -552,7 +552,7 @@ def circuit_simulation_monte_carlo(params = None, topcell = None, verbose=True, 
   if '_' in circuit_name[0]:
     circuit_name = ''.join(circuit_name.split('_', 1))  # remove leading _
   
-  
+
   if verbose:
     print('*** circuit_simulation_monte_carlo()')
   

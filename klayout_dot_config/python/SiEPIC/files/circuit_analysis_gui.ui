@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>frmAnalysis</class>
+ <widget class="QDialog" name="frmAnalysis">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1027</width>
+    <height>693</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Circuit Analysis</string>
+  </property>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>100</y>
+     <width>431</width>
+     <height>491</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::Box</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Plain</enum>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="pixmap">
+    <pixmap>../Pictures/samplepcircuit.jpg</pixmap>
+   </property>
+   <property name="scaledContents">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="comboBox">
+   <property name="geometry">
+    <rect>
+     <x>600</x>
+     <y>40</y>
+     <width>301</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <item>
+    <property name="text">
+     <string>S(1,1)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>S(1,2)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>S(1,3)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>S(1,4)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>S(2,1)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>S(2,2)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>S(2,3)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>S(2,4)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>S(3,1)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>S(3,2)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>S(3,3)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>S(3,4)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>S(4,1)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>S(4,2)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>S(4,3)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>S(4,4)</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QPushButton" name="ok">
+   <property name="geometry">
+    <rect>
+     <x>920</x>
+     <y>650</y>
+     <width>89</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Ok</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="cancel">
+   <property name="geometry">
+    <rect>
+     <x>810</x>
+     <y>650</y>
+     <width>80</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Cancel</string>
+   </property>
+  </widget>
+  <widget class="QWidget" name="fig1" native="true">
+   <property name="geometry">
+    <rect>
+     <x>510</x>
+     <y>100</y>
+     <width>471</width>
+     <height>221</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QWidget" name="fig2" native="true">
+   <property name="geometry">
+    <rect>
+     <x>510</x>
+     <y>360</y>
+     <width>471</width>
+     <height>221</height>
+    </rect>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
