@@ -32,7 +32,9 @@ if 'requests' not in sys.modules:
             main(['install', 'requests'])
 
 
-if 'json' not in sys.modules:
+try:
+    import json
+except:
     try:
         import pip
     except ImportError:
