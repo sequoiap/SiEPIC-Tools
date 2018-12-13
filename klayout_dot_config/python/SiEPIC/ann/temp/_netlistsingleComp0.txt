@@ -1,0 +1,16 @@
+* Spice output from KLayout SiEPIC-Tools v0.3.47, 2018-12-12 23:10:02.
+
+.param MC_uniformity_width=0 
+.param MC_uniformity_thickness=0 
+.param MC_resolution_x=100 
+.param MC_resolution_y=100 
+.param MC_grid=10e-6 
+.param MC_non_uniform=99 
+ ebeam_y_1550_0  N$-1 N$1 N$0 ebeam_y_1550 library="Design kits/ebeam"  lay_x=7.47E-6 lay_y=254.8E-6
+ ebeam_bdc_te1550_1  N$4 N$5 N$2 N$3 ebeam_bdc_te1550 library="Design kits/ebeam"  lay_x=33.88E-6 lay_y=191.735E-6
+ ebeam_wg_integral_1550_2  N$0 N$2 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=40.051u wg_width=0.500u points="[[14.87,252.05],[31.53,252.05],[31.53,227.11]]" radius=5.0 lay_x=23.825E-6 lay_y=240.205E-6
+ ebeam_wg_integral_1550_3  N$1 N$3 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=170.595u wg_width=0.500u points="[[14.87,257.55],[83.13,257.55],[83.13,231.1],[72.71,231.1],[72.71,247.47],[36.23,247.47],[36.23,227.11]]" radius=5.0 lay_x=49.625E-6 lay_y=242.955E-6
+ ebeam_wg_integral_1550_4  N$4 N$-2 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=58.471u wg_width=0.500u points="[[31.53,156.36],[31.53,127.8],[0.07,127.8]]" radius=5.0 lay_x=16.425E-6 lay_y=141.455E-6
+ ebeam_wg_integral_1550_5  N$5 N$-3 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=190.171u wg_width=0.500u points="[[36.23,156.36],[36.23,0.8],[0.07,0.8]]" radius=5.0 lay_x=18.775E-6 lay_y=77.955E-6
+.ends EBeam_hyrum_v1
+

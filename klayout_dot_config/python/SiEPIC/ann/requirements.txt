@@ -1,0 +1,9 @@
+scipy
+scikit-rf
+h5py
+matplotlib
+TensorFlow
+Keras
+
+# If we decide to use graphviz and pygraphviz for generating schematics
+# pygraphviz
