@@ -19,7 +19,7 @@ def getSparams():
     # Get the current topcell from Klayout
     cell = pya.Application.instance().main_window().current_view().active_cellview().cell
     # Get the netlist from the cell
-    text_subckt, text_main = cell.spice_netlist_export(verbose=False)
+    text_subckt, text_main = cell.spice_netlist_export(verbose=True)
     #print(dir(cell))
     # Write the netlist to a temporary file
     fid = open(netname, 'w')

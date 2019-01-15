@@ -1,4 +1,4 @@
-* Spice output from KLayout SiEPIC-Tools v0.3.47, 2019-01-08 15:29:32.
+* Spice output from KLayout SiEPIC-Tools v0.3.47, 2019-01-14 09:08:00.
 
 .param MC_uniformity_width=0 
 .param MC_uniformity_thickness=0 
@@ -6,33 +6,11 @@
 .param MC_resolution_y=100 
 .param MC_grid=10e-6 
 .param MC_non_uniform=99 
- ebeam_bdc_te1550_0  N$2 N$3 N$0 N$1 ebeam_bdc_te1550 library="Design kits/ebeam"  lay_x=-60.54E-6 lay_y=-224.635E-6
- ebeam_bdc_te1550_1  N$6 N$7 N$4 N$5 ebeam_bdc_te1550 library="Design kits/ebeam"  lay_x=-96.04E-6 lay_y=-985.0E-9
- ebeam_bdc_te1550_2  N$10 N$11 N$8 N$9 ebeam_bdc_te1550 library="Design kits/ebeam"  lay_x=-23.669999999999998E-6 lay_y=-1.8950000000000002E-6
- ebeam_bdc_te1550_3  N$13 N$15 N$12 N$14 ebeam_bdc_te1550 library="Design kits/ebeam"  lay_x=-60.080000000000005E-6 lay_y=98.245E-6
- ebeam_y_1550_4  N$18 N$16 N$17 ebeam_y_1550 library="Design kits/ebeam"  lay_x=-127.58E-6 lay_y=-88.38000000000001E-6
- ebeam_y_1550_5  N$21 N$19 N$20 ebeam_y_1550 library="Design kits/ebeam"  lay_x=11.03E-6 lay_y=-93.76E-6
- ebeam_y_1550_6  N$22 N$24 N$23 ebeam_y_1550 library="Design kits/ebeam"  lay_x=-34.78E-6 lay_y=166.13000000000002E-6
- ebeam_y_1550_7  N$25 N$26 N$27 ebeam_y_1550 library="Design kits/ebeam"  lay_x=-88.25000000000001E-6 lay_y=167.68E-6
- ebeam_wg_strip_1550_8  None N$28 ebeam_wg_strip_1550 library="Design kits/ebeam" wg_length=0u wg_width=0.500u lay_x=-412.01E-6 lay_y=-361.22E-6
- ebeam_wg_strip_1550_9  None N$29 ebeam_wg_strip_1550 library="Design kits/ebeam" wg_length=0u wg_width=0.500u lay_x=-412.01E-6 lay_y=-161.22E-6
- ebeam_wg_strip_1550_10  None N$30 ebeam_wg_strip_1550 library="Design kits/ebeam" wg_length=0u wg_width=0.500u lay_x=-412.01E-6 lay_y=38.78E-6
- ebeam_wg_strip_1550_11  None N$31 ebeam_wg_strip_1550 library="Design kits/ebeam" wg_length=0u wg_width=0.500u lay_x=-412.01E-6 lay_y=238.78E-6
- ebeam_wg_integral_1550_12  N$31 N$22 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=424.431u wg_width=0.500u points="[[-395.51,238.78],[-34.78,238.78],[-34.78,173.53]]" radius=5.0 lay_x=-214.52E-6 lay_y=206.78E-6
- ebeam_wg_integral_1550_13  N$30 N$25 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=528.373u wg_width=0.500u points="[[-395.51,38.78],[-342.32,38.78],[-342.32,219.81],[-88.25,219.81],[-88.25,175.08]]" radius=5.0 lay_x=-241.25500000000002E-6 lay_y=129.29500000000002E-6
- ebeam_wg_integral_1550_14  N$26 N$12 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=46.632u wg_width=0.500u points="[[-85.5,160.28],[-85.5,141.04],[-62.43,141.04],[-62.43,133.62]]" radius=5.0 lay_x=-73.965E-6 lay_y=146.95E-6
- ebeam_wg_integral_1550_15  N$27 N$4 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=174.104u wg_width=0.500u points="[[-91.0,160.28],[-91.0,139.71],[-121.9,139.71],[-121.9,70.69],[-98.39,70.69],[-98.39,34.39]]" radius=5.0 lay_x=-106.45E-6 lay_y=97.33500000000001E-6
- ebeam_wg_integral_1550_16  N$5 N$13 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=56.642u wg_width=0.500u points="[[-93.69,34.39],[-93.69,50.29],[-62.43,50.29],[-62.43,62.87]]" radius=5.0 lay_x=-78.06E-6 lay_y=48.63E-6
- ebeam_wg_integral_1550_17  N$23 N$14 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=42.212u wg_width=0.500u points="[[-37.53,158.73],[-37.53,141.27],[-57.73,141.27],[-57.73,133.62]]" radius=5.0 lay_x=-47.63E-6 lay_y=146.17499999999998E-6
- ebeam_wg_integral_1550_18  N$8 N$15 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=58.002u wg_width=0.500u points="[[-26.02,33.48],[-26.02,49.45],[-57.73,49.45],[-57.73,62.87]]" radius=5.0 lay_x=-41.875E-6 lay_y=48.175000000000004E-6
- ebeam_wg_integral_1550_19  N$24 N$9 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=332.169u wg_width=0.500u points="[[-32.03,158.73],[-32.03,143.32],[42.75,143.32],[42.75,108.4],[6.43,108.4],[6.43,69.85],[46.66,69.85],[46.66,47.22],[-21.32,47.22],[-21.32,33.48]]" radius=5.0 lay_x=7.315E-6 lay_y=96.105E-6
- ebeam_wg_integral_1550_20  N$6 N$16 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=73.462u wg_width=0.500u points="[[-98.39,-36.36],[-98.39,-49.29],[-130.33,-49.29],[-130.33,-80.98]]" radius=5.0 lay_x=-114.36E-6 lay_y=-58.67E-6
- ebeam_wg_integral_1550_21  N$10 N$19 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=80.292u wg_width=0.500u points="[[-26.02,-37.27],[-26.02,-73.85],[8.28,-73.85],[8.28,-86.36]]" radius=5.0 lay_x=-8.870000000000001E-6 lay_y=-61.815000000000005E-6
- ebeam_wg_integral_1550_22  N$11 N$20 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=81.092u wg_width=0.500u points="[[-21.32,-37.27],[-21.32,-48.96],[13.78,-48.96],[13.78,-86.36]]" radius=5.0 lay_x=-3.77E-6 lay_y=-61.815000000000005E-6
- ebeam_wg_integral_1550_23  N$7 N$17 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=72.662u wg_width=0.500u points="[[-93.69,-36.36],[-93.69,-66.47],[-124.83,-66.47],[-124.83,-80.98]]" radius=5.0 lay_x=-109.26E-6 lay_y=-58.67E-6
- ebeam_wg_integral_1550_24  N$18 N$0 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=155.072u wg_width=0.500u points="[[-127.58,-95.78],[-127.58,-152.42],[-62.89,-152.42],[-62.89,-189.26]]" radius=5.0 lay_x=-95.23500000000001E-6 lay_y=-142.52E-6
- ebeam_wg_integral_1550_25  N$1 N$21 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=154.222u wg_width=0.500u points="[[-58.19,-189.26],[-58.19,-145.26],[11.03,-145.26],[11.03,-101.16]]" radius=5.0 lay_x=-23.580000000000002E-6 lay_y=-145.21E-6
- ebeam_wg_integral_1550_26  N$2 N$29 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=493.323u wg_width=0.500u points="[[-62.89,-260.01],[-62.89,-293.29],[-336.8,-293.29],[-336.8,-161.22],[-395.51,-161.22]]" radius=5.0 lay_x=-228.57500000000002E-6 lay_y=-227.255E-6
- ebeam_wg_integral_1550_27  N$28 N$3 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=436.981u wg_width=0.500u points="[[-395.51,-361.22],[-58.19,-361.22],[-58.19,-260.01]]" radius=5.0 lay_x=-226.22500000000002E-6 lay_y=-311.24E-6
-.ends EBeam_hyrum_v2
+ ebeam_wg_integral_1550_0  N$0 N$1 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=40.051u wg_width=0.500u points="[[14.87,252.05],[31.53,252.05],[31.53,227.11]]" radius=5.0 lay_x=23.825E-6 lay_y=240.205E-6
+ ebeam_y_1550_1  N$-1 N$2 N$0 ebeam_y_1550 library="Design kits/ebeam"  lay_x=7.47E-6 lay_y=254.8E-6
+ ebeam_wg_integral_1550_2  N$2 N$3 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=170.595u wg_width=0.500u points="[[14.87,257.55],[83.13,257.55],[83.13,231.1],[72.71,231.1],[72.71,247.47],[36.23,247.47],[36.23,227.11]]" radius=5.0 lay_x=49.625E-6 lay_y=242.955E-6
+ ebeam_bdc_te1550_3  N$4 N$5 N$1 N$3 ebeam_bdc_te1550 library="Design kits/ebeam"  lay_x=33.88E-6 lay_y=191.735E-6
+ ebeam_wg_integral_1550_4  N$4 N$-2 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=58.471u wg_width=0.500u points="[[31.53,156.36],[31.53,127.8],[0.07,127.8]]" radius=5.0 lay_x=16.425E-6 lay_y=141.455E-6
+ ebeam_wg_integral_1550_5  N$5 N$-3 ebeam_wg_integral_1550 library="Design kits/ebeam" wg_length=108.871u wg_width=0.500u points="[[36.23,156.36],[36.23,81.03],[1.14,81.03]]" radius=5.0 lay_x=19.310000000000002E-6 lay_y=118.07000000000001E-6
+.ends EBeam_hyrum_v1
 

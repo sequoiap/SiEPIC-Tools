@@ -77,22 +77,24 @@ class Cell():
         self.f = []
 
     def readSparamFile(self):
+        isgc = False
         if(self.devType == DEVTYPE.BDC.value):
             filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "sparams/EBeam_1550_TE_BDC.sparam")
         elif self.devType == DEVTYPE.DC.value:
             filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "sparams/te_ebeam_dc_halfring_straight_gap=30nm_radius=3um_width=520nm_thickness=210nm_CoupleLength=0um.dat")
         elif self.devType == DEVTYPE.GC.value:
             filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "sparams/GC_TE1550_thickness=220 deltaw=0.txt")
+            isgc = True
         elif self.devType == DEVTYPE.YB.value:
             filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "sparams/Ybranch_Thickness =220 width=500.sparam")
         else:
             print("ERROR: Unknown Device Type")
             return
-        if(self.devType != DEVTYPE.GC.value): #figure out how to parse GC devices
-            s, f = pya.Cell.Reader.readSparamData(filename, len(self.p))
-            self.f = np.linspace(f[0], f[-1], 1000)
-            func = interp1d(f, s, kind='cubic', axis=0)
-            self.s = func(self.f)            
+        #if(self.devType != DEVTYPE.GC.value): #figure out how to parse GC devices
+        s, f = pya.Cell.Reader.readSparamData(filename, len(self.p), isgc)
+        self.f = np.linspace(f[0], f[-1], 1000)
+        func = interp1d(f, s, kind='cubic', axis=0)
+        self.s = func(self.f)            
 
     def wgSparam(self):        
         c0 = 299792458 #m/s
@@ -169,7 +171,7 @@ class Parser:
         else:
             #get f from another cell and do math for s
             filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "sparams/Ybranch_Thickness =220 width=500.sparam")
-            _, f = pya.Cell.Reader.readSparamData(filename, 3)
+            _, f = pya.Cell.Reader.readSparamData(filename, 3, False)
             newCell.f = np.linspace(f[0], f[-1], 1000)
             newCell.wgSparam()
         self.cellList.append(newCell)
