@@ -63,11 +63,15 @@ def spice_netlist_export(self, verbose=False, opt_in_selection_text=[]):
                 nets_str += " " + c.component + '_' + str(c.idx) + '_' + p.pin_name
         for p in c.pins:
             if p.type == _globals.PIN_TYPES.OPTICALIO:
-                nets_str += " " + str(p.net.idx)
+                nets_str += " N$" + str(ioports)
+                ioports -= 1
+        #pinIOtype = any([p for p in c.pins if p.type == _globals.PIN_TYPES.OPTICALIO])
         for p in c.pins:
             if p.type == _globals.PIN_TYPES.OPTICAL:
                 if p.net.idx != None:
                     nets_str += " N$" + str(p.net.idx)
+                #if p.net.idx != None:
+                #    nets_str += " N$" + str(p.net.idx)
                 else:
                     nets_str += " N$" + str(ioports)
                     ioports -= 1
@@ -83,7 +87,7 @@ def spice_netlist_export(self, verbose=False, opt_in_selection_text=[]):
         # Check to see if this component is an Optical IO type.
         pinIOtype = any([p for p in c.pins if p.type == _globals.PIN_TYPES.OPTICALIO])
 
-        ignoreOpticalIOs = True
+        ignoreOpticalIOs = False
         if ignoreOpticalIOs and pinIOtype:
             # Replace the Grating Coupler or Edge Coupler with a 0-length waveguide.
             component1 = "ebeam_wg_strip_1550"
