@@ -45,12 +45,15 @@ class CircuitSimulationGUI():
         # Initialize the menu and figures
         self.create_menu()
         self.init_figures()
+        # Get s parameters and frequencies (generates the netlist, too).
+        self.s, self.f = gs.getSparams()
         # Update magnitude and phase generates the netlist, and therefore
         # need to be placed before generate_schematic
         self.update_magnitude()
         self.update_phase()
         self.set_controls()
         self.generate_schematic()
+        self.ports = gs.getPorts()
         # Now that everything is in place, show the window.
         self.parent.after(0, self.parent.deiconify)
         
@@ -88,28 +91,29 @@ class CircuitSimulationGUI():
     def set_controls(self):
         options = NetlistDiagram.getExternalPortList()
         thing1 = tk.Label(self.controls, text="From: ").grid(row=0, column=0)#.pack(side=tk.LEFT)
-        first = tk.StringVar(self.parent)
-        first.set(options[0])
-        second = tk.StringVar(self.parent)
-        second.set(options[0])
-        thing2 = tk.OptionMenu(self.controls, first, *options)
+        self.first = tk.StringVar(self.parent)
+        self.first.set(options[0])
+        self.second = tk.StringVar(self.parent)
+        self.second.set(options[0])
+        thing2 = tk.OptionMenu(self.controls, self.first, *options, command=self.selection_changed)
         thing2.config(width=20)
         thing2.grid(row=0, column=1)#.pack(side=tk.LEFT)
         thing3 = tk.Label(self.controls, text=" to: ").grid(row=0, column=2)#.pack(side=tk.LEFT)
-        thing4 = tk.OptionMenu(self.controls, second, *options)
+        thing4 = tk.OptionMenu(self.controls, self.second, *options, command=self.selection_changed)
         thing4.config(width=20)
         thing4.grid(row=0, column=3)#.pack(side=tk.LEFT)
-        gobtn = tk.Button(self.controls, text="GO").grid(row=0, column=4)#.pack(side=tk.LEFT) #command=func)
+        #gobtn = tk.Button(self.controls, text="GO").grid(row=0, column=4)#.pack(side=tk.LEFT) #command=func)
                         
-    def update_magnitude(self):
+    def update_magnitude(self, fromPort=0, toPort=0):
         # Get s parameters and frequencies
-        s, f = gs.getSparams()
+        #s, f = gs.getSparams()
+        s, f = self.s, self.f
         # Convert from Hz to THz
         tera = 1e12
         f = np.divide(f, tera)
         # Clear whatever is on the plot, overlay new graph
         self.mag_ax.clear()
-        self.mag_ax.plot(f, abs(s[:,0,2])**2)
+        self.mag_ax.plot(f, abs(s[:,fromPort,toPort])**2)
         # Label the plot
         self.mag_ax.set_xlabel('Frequency (THz)')
         self.mag_ax.set_ylabel(r'$|A| ^2$')
@@ -118,23 +122,24 @@ class CircuitSimulationGUI():
         self.mag_canvas.draw()
         self.mag_toolbar.update()
     
-    def update_phase(self):
+    def update_phase(self, fromPort=0, toPort=0):
         # Get s parameters and frequencies
-        s, f = gs.getSparams()
+        #s, f = gs.getSparams()
+        s, f = self.s, self.f
         # Convert from Hz to THz
         tera = 1e12
         f = np.divide(f, tera)
         # Clear whatever is on the plot, overlay new graph
         self.phase_ax.clear()
         # Label the plot
-        self.phase_ax.plot(f, np.rad2deg(np.unwrap(np.angle(s[:,0,2]))))
+        self.phase_ax.plot(f, np.rad2deg(np.unwrap(np.angle(s[:,fromPort,toPort]))))
         self.phase_ax.set_xlabel('Frequency (THz)')
         self.phase_ax.set_title('Phase')
         # Draw on the canvas, update the toolbar
         self.phase_canvas.draw()
         self.phase_toolbar.update()
         
-    def open_schematic(self, event):#event):
+    def open_schematic(self, event):
         import subprocess, os, sys
         wd = os.getcwd()
         temppath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp")
@@ -147,6 +152,19 @@ class CircuitSimulationGUI():
         elif os.name == 'posix': # For Linux, Mac, etc.
             subprocess.call(('xdg-open', filepath))
         os.chdir(wd)
+        
+    def port2idx(self, port):
+        port = -port;
+        print(self.ports)
+        port = str(port)
+        if port in self.ports:
+            return self.ports.index(port)
+        else:
+            raise Exception("port2idx function malfunctioned.")
+        
+    def selection_changed(self, event):
+        self.update_magnitude(self.port2idx(int(self.first.get())), self.port2idx(int(self.second.get())))
+        self.update_phase(self.port2idx(int(self.first.get())), self.port2idx(int(self.second.get())))
         
     def generate_schematic(self):
         NetlistDiagram.run()

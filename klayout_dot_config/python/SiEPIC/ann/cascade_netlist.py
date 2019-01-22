@@ -221,6 +221,13 @@ class Params:
         mat = test.cellList[0].s
         freq = test.cellList[0].f
         return (mat, freq)
+        
+    def get_ports(filename):
+        test = Parser(filename)
+        test.parseFile()
+        test.cascadeCells()
+        ports = test.cellList[0].p
+        return ports
     
 pya.Cell.Params = Params
 

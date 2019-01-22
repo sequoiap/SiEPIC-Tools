@@ -116,7 +116,7 @@ class DiagramMaker():
             externals = [x for x in cell.ports if x < 0 ]
             print(externals)
             if(len(externals) > 0):
-                additional = "\nExternal ports: "
+                additional = "\nExternal port numbers: "
                 for port in externals:
                     additional = additional + str(-port) + " "
                 title += additional
