@@ -3,5 +3,5 @@ Also note that we have been developing this addition in a linux environment (Ubu
 
 Dependencies: Klayout, Scipy, Matplotlib, Tensor Flow, Keras, h5py, Scikit-rf, graphviz, python3-tk, Pillow
 
-All of these can be installed by running a bash script included in the toolbox. 
+These can be installed automatically by running a bash script included in the toolbox. 
 Navigate to "~/SiEPIC-Tools/klayout_dot_config/python/SiEPIC/ann" on your computer and run "bash install.sh" from the terminal.
