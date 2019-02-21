@@ -48,4 +48,3 @@ def graph_factory(x, y):
 
 if __name__=="__main__":
     graph_factory(1,1)
-    graph_factory(1,2)
