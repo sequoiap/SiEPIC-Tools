@@ -59,38 +59,64 @@ class Graph:
     default_title : str
         The default title for a new or reset window and plot.
     master : tk.Toplevel
+        The Toplevel tkinter object that must exist for Graph to exist.
+    menubar : tk.menu
+        The tkinter menubar object for user operations.
     fig : matplotlib.figure.Figure
+        The matplotlib figure object contained within Graph.
     canvas : matplotlib.backends.backend_tkagg.FigureCanvasTkAgg
+        The matplotlib drawing canvas object contained within Graph.
     toolbar: matplotlib.backends.backend_tkagg.NavigationToolbar2Tk
+        The matplotlib toolbar object contained within Graph.
     ax : matplotlib.axes.Axes
+        The matplotlib axis upon which line and legend operations are performed.
     hasLegend : boolean
+        A state variable used to maintain the legend's existence state between graph updates (default is false)
     lines : DataSet[]
+        A list of DataSet objects containing the data points and their formal names.
 
     Methods
     -------
     reset()
         Clears the figure, adds a new axis, resets the title, and clears all stored DataSet lines.
+    init_menu()
+        Initializes all menu items and packs the object.
+    on_key_press(event)
+        Registers a key press event (default matplotlib keybindings are implemented).
+    close_windows()
+        Destroys the child tkinter object upon closing.
     plot(x=None, y=None, name=None)
         Plots x and y data on a Graph.
-    clear()
-    legend()
-    linewidth()
-    on_key_press()
+    clear(value)
+        Deletes a stored DataSet value from the graph's self.lines DataSet objects list and removes 
+        its line and legend from the plot.
+    legend(include=None)
+        Updates the legend's values and maintains its state. Can be used to activate/deactivate the legend.
+    linewidth(size)
+        Changes the linewidth of all plotted lines.
     title(title)
         Sets the window title and the graph title.
     xlabel(xlabel)
         Sets the x-axis label.
     ylabel(ylabel)
         Sets the y-axis label.
-    close_windows()
     """
 
     # Default window and plot title
     default_title = "Graph"
 
+    #########################################################################
+    #                                                                       #
+    #                 GRAPH INITIALIZATION FUNCTIONS                        #
+    #                                                                       #
+    #########################################################################
+
     def __init__(self, master: tk.Toplevel):
         # The master tk object
         self.master = master
+        self.menubar = tk.Menu(self.master)
+        self.init_menu()
+        self.master.config(menu=self.menubar)
 
         # The only real objects we'll need to interact with to plot and unplot
         self.fig = Figure(figsize=(5, 4), dpi=100)
@@ -101,7 +127,6 @@ class Graph:
         self.toolbar.update()
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
         self.canvas.mpl_connect("key_press_event", self.on_key_press)
-
         # Reset the plot area and the stored lines
         self.reset()
 
@@ -117,6 +142,52 @@ class Graph:
         # If a DataSet line is deleted by its formal name, Graph will delete the
         # first line in the list that matches the name.
         self.lines = []
+
+    def init_menu(self):
+        filemenu = tk.Menu(self.menubar, tearoff=0)
+        filemenu.add_command(label="Open")
+        filemenu.add_command(label="Save")
+        filemenu.add_command(label="Close", command=self.close_windows)
+        self.menubar.add_cascade(label="File", menu=filemenu)
+
+        editmenu = tk.Menu(self.menubar, tearoff=0)
+        editmenu.add_cascade(label="Delete line")
+        self.menubar.add_cascade(label="Edit", menu=editmenu)
+
+        appearancemenu = tk.Menu(self.menubar, tearoff=0)
+        appearancemenu.add_checkbutton(label="Toggle legend")
+        appearancemenu.add_command(label="Set title")
+        appearancemenu.add_command(label="Set x label")
+        self.menubar.add_cascade(label="Appearance", menu=appearancemenu)
+
+        datamenu = tk.Menu(self.menubar, tearoff=0)
+        datamenu.add_command(label="Save data as .mat")
+        datamenu.add_command(label="Save data as .txt")
+        datamenu.add_command(label="Save figure")
+        self.menubar.add_cascade(label="Data", menu=datamenu)
+
+    def on_key_press(self, event):
+        """Registers a key press event (default matplotlib keybindings are implemented).
+
+        Parameters
+        ----------
+        event : Event
+            An event like a key press that is passed to the matplotlib key press handler.
+        """
+
+        #print("you pressed {}".format(event.key))
+        key_press_handler(event, self.canvas, self.toolbar)
+
+    def close_windows(self):
+        """Destroys the child tkinter object upon closing."""
+
+        self.master.destroy()
+
+    #########################################################################
+    #                                                                       #
+    #               PLOTTING AND AXIS MANIPULATION FUNCTIONS                #
+    #                                                                       #
+    #########################################################################
 
     def plot(self, x: np.array, y: np.array, name: str = None):
         """Plots x and y data on a Graph.
@@ -146,11 +217,20 @@ class Graph:
             raise ValueError("Error in required arguments for plotting.")        
 
     # Much help derived from https://stackoverflow.com/questions/4981815/how-to-remove-lines-in-a-matplotlib-plot
-    # self.lines is a list of DataSet objects. The user should take care to make
-    # DataSet names unique, as there is no error checking done by Graph. 
-    # If a DataSet line is deleted by its formal name, Graph will delete the
-    # first line in the list that matches the name.
     def clear(self, value=None):
+        """Deletes a stored DataSet value from the graph's self.lines DataSet objects list and removes 
+        its line and legend from the plot.
+
+        The user should take care to make DataSet names unique, as there is no error checking done by Graph.
+
+        Parameters
+        ----------
+        value : int or str
+            If int, the line stored at the specified index is deleted.
+            If str, the line with the specified name is deleted (no effect if it doesn't exist). Since no error
+            checking is performed, Graph will delete the first line in the list whose string matches 'value'.
+        """
+
         if type(value) is int:
             self.ax.lines.remove(self.lines.pop(value).getObjectID())
         elif type(value) is str:
@@ -166,6 +246,16 @@ class Graph:
         self.canvas.draw()
 
     def legend(self, include: bool = None):
+        """Updates the legend's values and maintains its state.
+
+        Parameters
+        ----------
+        include : bool, optional
+            If not specified, default behavior is to maintain the legend's present state (self.hasLegend).
+            If true, a draggable legend is placed onto the Graph.
+            If false, the legend is turned off.
+        """
+        
         if include == None:
             if self.hasLegend == True:
                 include = True
@@ -184,23 +274,26 @@ class Graph:
             self.ax.legend(labels).set_draggable(True)
             self.hasLegend = True
         else:
-            self.ax.legend().remove()
+            if self.hasLegend == True: # Prevents error messages from removing nonexisting legend
+                self.ax.legend().remove()
             self.hasLegend = False
         self.canvas.draw()
     
     def linewidth(self, size: float):
-        """
-        Some line sizes:
+        """Changes the linewidth of all plotted lines.
+
+        Some suggested line sizes:
         Ultrathin   Thin    Default     Thick   Ultrathick      Custom
         0.5         1.0     1.5         2.0     2.5             _._
+
+        Parameters
+        ----------
+        size : float
+            A floating point value of the thickness to use.
         """
         for line in self.ax.lines:
             line.set_linewidth(size)
         self.canvas.draw()
-
-    def on_key_press(self, event):
-        print("you pressed {}".format(event.key))
-        key_press_handler(event, self.canvas, self.toolbar)
 
     def title(self, title: str):
         """Sets the window title and the graph title.
@@ -237,9 +330,6 @@ class Graph:
         """
         self.ax.set_ylabel(ylabel)
         self.canvas.draw()
-
-    def close_windows(self):
-        self.master.destroy()
 
 def test(): 
     root = tk.Tk()
