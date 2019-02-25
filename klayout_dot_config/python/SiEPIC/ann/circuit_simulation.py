@@ -62,12 +62,18 @@ class CircuitAnalysisGUI():
         self.schematic = tk.Frame(self.parent, height=self.schematic_height, width=self.schematic_width)#, relief="ridge", bd=5)
         self.schematic.grid(row=0, column=0, rowspan=3)
 
-        self.magnitude = Graph(self.parent)
-        self.phase = Graph(self.parent)
+        self.open_magnitude()
+        self.open_phase()
         
         # Port selection menu
         self.controls = tk.Frame(self.parent, width=700, height=30, bd=1)
         self.controls.grid(row=0, column=1)
+
+    def open_magnitude(self):
+        self.magnitude = Graph(self.parent, "Magnitude")
+
+    def open_phase(self):
+        self.phase = Graph(self.parent, "Phase")
 
     def set_controls(self):
         options = NetlistDiagram.getExternalPortList()
@@ -84,8 +90,12 @@ class CircuitAnalysisGUI():
         thing4.config(width=20)
         thing4.grid(row=1, column=1)#.pack(side=tk.LEFT)
         #gobtn = tk.Button(self.controls, text="GO").grid(row=0, column=4)#.pack(side=tk.LEFT) #command=func)
+        openMagnitude = tk.Button(self.controls, text="Magnitude", command=self.open_magnitude)
+        openMagnitude.grid(row=2, column=0)
+        openPhase = tk.Button(self.controls, text="Phase", command=self.open_phase)
+        openPhase.grid(row=2, column=1)
 
-    def update_magnitude(self, fromPort=0, toPort=0):
+    def update_magnitude(self, fromPort=0, toPort=0, name=None):
         # Get s parameters and frequencies
         #s, f = gs.getSparams()
         s, f = self.s, self.f
@@ -93,14 +103,13 @@ class CircuitAnalysisGUI():
         tera = 1e12
         f = np.divide(f, tera)
         # Clear whatever is on the plot, overlay new graph
-        name = str(fromPort) + "_to_" + str(toPort)
         self.magnitude.plot(f, abs(s[:,fromPort,toPort])**2, name)
         # Label the plot
         self.magnitude.xlabel('Frequency (THz)')
         self.magnitude.ylabel(r'$|A| ^2$')
         self.magnitude.title('Magnitude-Squared')
     
-    def update_phase(self, fromPort=0, toPort=0):
+    def update_phase(self, fromPort=0, toPort=0, name=None):
         # Get s parameters and frequencies
         #s, f = gs.getSparams()
         s, f = self.s, self.f
@@ -108,7 +117,6 @@ class CircuitAnalysisGUI():
         tera = 1e12
         f = np.divide(f, tera)
         # Clear whatever is on the plot, overlay new graph
-        name = str(fromPort) + "_to_" + str(toPort)
         self.phase.plot(f, np.rad2deg(np.unwrap(np.angle(s[:,fromPort,toPort]))), name)
         # Label the plot
         self.phase.xlabel('Frequency (THz)')
@@ -138,8 +146,10 @@ class CircuitAnalysisGUI():
             raise Exception("port2idx function malfunctioned.")
         
     def selection_changed(self, event):
-        self.update_magnitude(self.port2idx(int(self.first.get())), self.port2idx(int(self.second.get())))
-        self.update_phase(self.port2idx(int(self.first.get())), self.port2idx(int(self.second.get())))
+        fromPort = self.first.get()
+        toPort = self.second.get()
+        self.update_magnitude(self.port2idx(int(self.first.get())), self.port2idx(int(self.second.get())), str(fromPort) + "_to_" + str(toPort))
+        self.update_phase(self.port2idx(int(self.first.get())), self.port2idx(int(self.second.get())), str(fromPort) + "_to_" + str(toPort))
         
     def generate_schematic(self):
         NetlistDiagram.run()
