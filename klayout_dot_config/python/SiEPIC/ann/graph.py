@@ -146,10 +146,14 @@ class Graph:
     #                                                                       #
     #########################################################################
 
-    def __init__(self, parent: tk.Toplevel):
+    def __init__(self, parent: tk.Toplevel, window_title=None):
         # The master tk object
         self.parent = parent
         self.master = tk.Toplevel(parent)
+        if window_title == None:
+            self.master.title(Graph.default_title)
+        else:
+            self.master.title(window_title)
         self.menubar = tk.Menu(self.master)
         self.hasLegend = tk.BooleanVar()
 
@@ -409,7 +413,7 @@ class Graph:
             The graph and window Title.
         """
 
-        self.master.title(title)
+        #self.master.title(title)
         self.ax.set_title(title)
         self.canvas.draw()
 
