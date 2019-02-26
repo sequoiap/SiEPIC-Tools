@@ -26,7 +26,7 @@ class ListSelectDialog:
     def askdeletelist(self, startlist: list):
         self.listbox = tk.Listbox(self.master)
         self.listbox.pack()
-        self.startlist = startlist
+        #self.startlist = startlist
         self.deleted = []
         self.leftover = startlist
         self.success = True
@@ -54,6 +54,7 @@ class ListSelectDialog:
 
     def _cancel(self):
         self.success = False
+        self._on_close()
 
     def _on_close(self):
         self.master.destroy()
@@ -256,8 +257,9 @@ class Graph:
             else:
                 linelist.append(line.name)
         delete = ListSelectDialog(tk.Toplevel(self.master)).askdeletelist(linelist)
-        for item in delete:
-            self.clear(item)
+        if delete != None:
+            for item in delete:
+                self.clear(item)
 
     def insertmenu_XLabel(self):
         label = simpledialog.askstring("Edit X Label","Wrap LaTeX in $, e.g. $|A|^2$", parent=self.master, initialvalue=self.ax.get_xlabel())
