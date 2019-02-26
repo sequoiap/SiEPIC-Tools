@@ -20,11 +20,10 @@ import numpy as np
 
 class ListSelectDialog:
     
-    def __init__(self, parent: tk.Toplevel):
-        self.parent = parent
+    def __init__(self, master: tk.Toplevel):
+        self.master = master
 
     def askdeletelist(self, startlist: list):
-        self.master = tk.Toplevel(self.parent)
         self.listbox = tk.Listbox(self.master)
         self.listbox.pack()
         self.startlist = startlist
@@ -256,7 +255,7 @@ class Graph:
                 counter += 1
             else:
                 linelist.append(line.name)
-        delete = ListSelectDialog(self.master).askdeletelist(linelist)
+        delete = ListSelectDialog(tk.Toplevel(self.master)).askdeletelist(linelist)
         for item in delete:
             self.clear(item)
 
