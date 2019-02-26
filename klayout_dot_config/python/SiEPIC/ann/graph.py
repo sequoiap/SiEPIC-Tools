@@ -17,16 +17,23 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationTool
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
 import numpy as np
+import scipy.io as sio
+import os # For filedialog to start in user's /~ instead of /.
 
 class ListSelectDialog:
-    
+    """Opens a dialog window presenting a list of items passed in as a parameter.
+
+    Delete button removes items from the list. Deleted items are the return value.
+
+    Usage: ListSelectDialog(master: tk.Toplevel).askdeletelist(startlist: list)
+    """
+
     def __init__(self, master: tk.Toplevel):
         self.master = master
 
     def askdeletelist(self, startlist: list):
         self.listbox = tk.Listbox(self.master)
         self.listbox.pack()
-        #self.startlist = startlist
         self.deleted = []
         self.leftover = startlist
         self.success = True
@@ -37,8 +44,12 @@ class ListSelectDialog:
 
         self.deleteBtn = tk.Button(self.master, text="Delete", command=lambda: self._delete(self.listbox))
         self.deleteBtn.pack()
-        self.closeBtn = tk.Button(self.master, text="Ok", command=self._on_close)
-        self.closeBtn.pack()
+        frame_okCancel = tk.Frame(self.master)
+        okBtn = tk.Button(frame_okCancel, text="Ok", command=self._on_close)
+        okBtn.grid(column=0, row=0)
+        cancelBtn = tk.Button(frame_okCancel, text="Cancel", command=self._cancel)
+        cancelBtn.grid(column=1, row=0)
+        frame_okCancel.pack()
 
         self.master.grab_set()
         self.master.wait_window(self.master)
@@ -88,6 +99,11 @@ class DataSet:
 
         return self.objectID
 
+    def to_mat(self):
+        xdata_name = self.name.replace(" ", "_") + "_x"
+        ydata_name = self.name.replace(" ", "_") + "_y"
+        return {xdata_name: self.x, ydata_name: self.y}
+
     def __str__(self):
         return self.name
 
@@ -117,6 +133,8 @@ class Graph:
         A state variable used to maintain the legend's existence state between graph updates (default is false)
     lines : DataSet[]
         A list of DataSet objects containing the data points and their formal names.
+    line_counter : int
+        An autoincrementing counter to assign numeric names to lines plotted without a specified name.
 
     Methods
     -------
@@ -162,6 +180,7 @@ class Graph:
 
         # Objects needed simply for the sake of embedding the graph in tk
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.master)
+        print(self.canvas.get_supported_filetypes())
         self.toolbar = NavigationToolbar2Tk(self.canvas, self.master)
         self.toolbar.update()
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
@@ -183,7 +202,8 @@ class Graph:
         # DataSet names unique, as there is no error checking done by Graph. 
         # If a DataSet line is deleted by its formal name, Graph will delete the
         # first line in the list that matches the name.
-        self.lines = []
+        self.lines = {}
+        self.line_counter = 1
 
     #########################################################################
     #                                                                       #
@@ -194,17 +214,17 @@ class Graph:
     def init_menu(self):
         filemenu = tk.Menu(self.menubar, tearoff=0)
         filemenu.add_command(label="New", command=self.filemenu_New)
-        filemenu.add_command(label="Open", command=self.filemenu_Open)
+        #filemenu.add_command(label="Open", command=self.filemenu_Open)
         filemenu.add_command(label="Close", command=self.filemenu_Close)
         filemenu.add_separator()
-        filemenu.add_command(label="Save", command=self.filemenu_SaveAsImage)
+        filemenu.add_command(label="Export as .mat", command=self.filemenu_ExportMat)
         #saveas_submenu = tk.Menu(filemenu, tearoff=0)
-        #saveas_submenu.add_command(label="Save as .fig")
+        #saveas_submenu.add_command(label="Save as .mat", command=self.filemenu_SaveAsMat)
         #saveas_submenu.add_command(label="Save as .txt")
         #saveas_submenu.add_command(label="Save as image", command=self.filemenu_SaveAsImage)
         #filemenu.add_cascade(label="Save As", menu=saveas_submenu)
-        filemenu.add_separator()
-        filemenu.add_command(label="Print")
+        #filemenu.add_separator()
+        #filemenu.add_command(label="Print")
         self.menubar.add_cascade(label="File", menu=filemenu)
 
         editmenu = tk.Menu(self.menubar, tearoff=0)
@@ -226,53 +246,74 @@ class Graph:
         insertmenu.add_checkbutton(label="Legend", onvalue=True, offvalue=False, variable=self.hasLegend, command=self.legend)
         self.menubar.add_cascade(label="Insert", menu=insertmenu)
 
+        helpmenu = tk.Menu(self.menubar, tearoff=0)
+        helpmenu.add_command(label="About")
+        helpmenu.add_command(label="Keyboard shortcuts")
+        helpmenu.add_command(label="LaTeX")
+        self.menubar.add_cascade(label="Help", menu=helpmenu)
+
     def filemenu_New(self):
         Graph(self.parent)
 
     def filemenu_Open(self):
         options = {}
-        options['initialdir'] = "/"
+        options['initialdir'] = os.path.expanduser('~')
         options['parent'] = self.master
         f = filedialog.askopenfilename(**options)
-        print("TODO")
+        print("TODO")        
 
-    def filemenu_SaveAsImage(self):
-        fileTypes = [("PNG","*.png"), ("JPG","*.jpg"), ("All files","*.*")]
+    def filemenu_ExportMat(self):
+        line_dict = {}
+        for line in self.lines.values():
+            for name, arr in line.to_mat().items():
+                line_dict[name] = arr
+        fileTypes = [("MATLAB file","*.mat")]
         options = {}
-        options['initialdir'] = "/"
+        options['initialdir'] = os.path.expanduser('~')
         options['filetypes'] = fileTypes
-        options['initialfile'] = ""
         options['parent'] = self.master
-        f = filedialog.asksaveasfilename(**options)
-        if f:
-            self.fig.savefig(f)
+        filename = filedialog.asksaveasfilename(**options)
+        if filename:
+            sio.savemat(filename, line_dict)
+
+    # def filemenu_SaveAsImage(self):
+    #     fileTypes = [("PNG","*.png"), \
+    #         ("JPG", "*.jpg"), \
+    #         ("SVG", "*.svg"), \
+    #         ("TIF", "*.tif"), \
+    #         ("All files","*.*")]
+    #     options = {}
+    #     options['initialdir'] = os.path.expanduser('~')
+    #     options['filetypes'] = fileTypes
+    #     options['initialfile'] = ""
+    #     options['parent'] = self.master
+    #     f = filedialog.asksaveasfilename(**options)
+    #     if f:
+    #         self.fig.savefig(f)
+    #         self.filename, self.file_ext = os.path.splitext(f)
             
     def editmenu_DeleteLine(self):
         linelist = []
-        counter = 1
-        for line in self.lines:
-            if line.name == None:
-                linelist.append("Line " + str(counter))
-                counter += 1
-            else:
-                linelist.append(line.name)
-        delete = ListSelectDialog(tk.Toplevel(self.master)).askdeletelist(linelist)
+        for line in self.lines.values():
+            linelist.append(line.name)
+        child_window = tk.Toplevel(self.master)
+        delete = ListSelectDialog(child_window).askdeletelist(linelist)
         if delete != None:
             for item in delete:
                 self.clear(item)
 
     def insertmenu_XLabel(self):
-        label = simpledialog.askstring("Edit X Label","Wrap LaTeX in $, e.g. $|A|^2$", parent=self.master, initialvalue=self.ax.get_xlabel())
+        label = simpledialog.askstring("Edit X Label","Wrap LaTeX in $", parent=self.master, initialvalue=self.ax.get_xlabel())
         if label is not None:
             self.xlabel(label)
 
     def insertmenu_YLabel(self):
-        label = simpledialog.askstring("Edit Y Label","Wrap LaTeX in $, e.g. $|A|^2$", parent=self.master, initialvalue=self.ax.get_ylabel())
+        label = simpledialog.askstring("Edit Y Label","Wrap LaTeX in $", parent=self.master, initialvalue=self.ax.get_ylabel())
         if label is not None:
             self.ylabel(label)
             
     def insertmenu_Title(self):
-        label = simpledialog.askstring("Edit Title","Wrap LaTeX in $, e.g. $|A|^2$", parent=self.master, initialvalue=self.ax.get_title())
+        label = simpledialog.askstring("Edit Title","Wrap LaTeX in $", parent=self.master, initialvalue=self.ax.get_title())
         if label is not None:
             self.title(label)
 
@@ -309,8 +350,8 @@ class Graph:
         y : np.array
             The y axis values
         name : str, optional
-            The name for this line (default = None). Caller should take care to make line names
-            unique, as Graph does no duplicate error checking.
+            The name for this line (default = None). Line names are required to be unique, and
+            Graph raises a ValueError if the unique name constraint is not satisfied.
 
         Raises
         ------
@@ -318,37 +359,42 @@ class Graph:
             If the shapes of x or y are different.
         """
 
-        if x.shape == y.shape:
+        if x.shape == y.shape and name not in self.lines:
+            if name == None:
+                name = "Line " + str(self.line_counter)
+                self.line_counter += 1
             dataset = DataSet(x, y, name)
             dataset.setObjectID(self.ax.plot(dataset.x, dataset.y))
-            self.lines.append(dataset)
+            self.lines[dataset.name] = dataset
             self.legend()
             self.canvas.draw()
         else:
-            raise ValueError("Error in required arguments for plotting.")        
+            if x.shape != y.shape:
+                raise ValueError("x and y array shapes do not match.")
+            if(name in self.lines):
+                raise ValueError("line with specified name already exists (unique constraint failed).")
+            raise ValueError("Error in required arguments for plotting.")
 
     # Much help derived from https://stackoverflow.com/questions/4981815/how-to-remove-lines-in-a-matplotlib-plot
     def clear(self, value=None):
         """Deletes a stored DataSet value from the graph's self.lines DataSet objects list and removes 
         its line and legend from the plot.
 
-        The user should take care to make DataSet names unique, as there is no error checking done by Graph.
+        The user should take care to make DataSet names unique, as Graph will raise a value error if attempts
+        are made to plot a duplicate.
 
         Parameters
         ----------
-        value : int or str
-            If int, the line stored at the specified index is deleted.
-            If str, the line with the specified name is deleted (no effect if it doesn't exist). Since no error
-            checking is performed, Graph will delete the first line in the list whose string matches 'value'.
+        value : str
+            The line with the specified name is deleted (no effect if it doesn't exist).
+            If None, all lines are cleared from the graph.
         """
 
-        if type(value) is int:
-            self.ax.lines.remove(self.lines.pop(value).getObjectID())
-        elif type(value) is str:
-            for line in self.lines:
+        if value is not None:
+            for line in self.lines.values():
                 if line.name == value:
                     self.ax.lines.remove(line.getObjectID())
-                    self.lines.remove(line)
+                    self.lines.pop(line.name)
                     break
         else:
             self.reset()
@@ -375,13 +421,8 @@ class Graph:
             
         if include == True:
             labels = []
-            counter = 1
-            for line in self.lines:
-                if line.name is None:
-                    labels.append("Line " + str(counter))
-                    counter += 1
-                else:
-                    labels.append(line.name)
+            for line in self.lines.values():
+                labels.append(line.name)
             self.ax.legend(labels).set_draggable(True)
             self.hasLegend.set(True)
         else:
