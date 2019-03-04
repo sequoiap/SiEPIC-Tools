@@ -19,5 +19,5 @@ from SiEPIC import ann
 
 # Enter your Python code here ..
 
-ann.tk_circuit_simulation.circuit_analysis()</text>
+ann.circuit_simulation.circuit_analysis()</text>
 </klayout-macro>
