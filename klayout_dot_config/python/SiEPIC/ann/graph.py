@@ -44,12 +44,14 @@ class ListSelectDialog:
 
         self.deleteBtn = tk.Button(self.master, text="Delete", command=lambda: self._delete(self.listbox))
         self.deleteBtn.pack()
-        frame_okCancel = tk.Frame(self.master)
-        okBtn = tk.Button(frame_okCancel, text="Ok", command=self._on_close)
-        okBtn.grid(column=0, row=0)
-        cancelBtn = tk.Button(frame_okCancel, text="Cancel", command=self._cancel)
-        cancelBtn.grid(column=1, row=0)
-        frame_okCancel.pack()
+        okBtn = tk.Button(self.master, text="Ok", command=self._on_close)
+        okBtn.pack()
+        # frame_okCancel = tk.Frame(self.master)
+        # okBtn = tk.Button(frame_okCancel, text="Ok", command=self._on_close)
+        # okBtn.grid(column=0, row=0)
+        # cancelBtn = tk.Button(frame_okCancel, text="Cancel", command=self._cancel)
+        # cancelBtn.grid(column=1, row=0)
+        # frame_okCancel.pack()
 
         self.master.grab_set()
         self.master.wait_window(self.master)
@@ -168,6 +170,7 @@ class Graph:
         # The master tk object
         self.parent = parent
         self.master = tk.Toplevel(parent)
+        # self.master = parent
         if window_title == None:
             self.master.title(Graph.default_title)
         else:
@@ -180,7 +183,6 @@ class Graph:
 
         # Objects needed simply for the sake of embedding the graph in tk
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.master)
-        print(self.canvas.get_supported_filetypes())
         self.toolbar = NavigationToolbar2Tk(self.canvas, self.master)
         self.toolbar.update()
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
@@ -217,7 +219,7 @@ class Graph:
         #filemenu.add_command(label="Open", command=self.filemenu_Open)
         filemenu.add_command(label="Close", command=self.filemenu_Close)
         filemenu.add_separator()
-        filemenu.add_command(label="Export as .mat", command=self.filemenu_ExportMat)
+        filemenu.add_command(label="Export to .mat", command=self.filemenu_ExportMat)
         #saveas_submenu = tk.Menu(filemenu, tearoff=0)
         #saveas_submenu.add_command(label="Save as .mat", command=self.filemenu_SaveAsMat)
         #saveas_submenu.add_command(label="Save as .txt")
@@ -236,6 +238,11 @@ class Graph:
         linewidth_submenu.add_command(label="Thick", command=lambda: self.linewidth(2.0))
         linewidth_submenu.add_command(label="Ultrathick", command=lambda: self.linewidth(2.5))
         editmenu.add_cascade(label="Set linewidth", menu=linewidth_submenu)
+        windowsize_submenu = tk.Menu(editmenu, tearoff=0)
+        windowsize_submenu.add_command(label="Small")
+        windowsize_submenu.add_command(label="Default")
+        windowsize_submenu.add_command(label="Large")
+        editmenu.add_cascade(label="Resize window", menu=windowsize_submenu)
         self.menubar.add_cascade(label="Edit", menu=editmenu)
 
         insertmenu = tk.Menu(self.menubar, tearoff=0)
@@ -254,6 +261,7 @@ class Graph:
 
     def filemenu_New(self):
         Graph(self.parent)
+        #Graph(tk.Toplevel())
 
     def filemenu_Open(self):
         options = {}
