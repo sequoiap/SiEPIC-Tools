@@ -7,7 +7,7 @@ from matplotlib.figure import Figure
 
 from SiEPIC.ann import getSparams as gs
 from SiEPIC.ann import NetlistDiagram
-from SiEPIC.ann.graph import Graph
+from SiEPIC.ann.graphing.graph import Graph
 
 import numpy as np
 import os

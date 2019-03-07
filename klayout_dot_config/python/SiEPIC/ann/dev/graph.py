@@ -44,14 +44,14 @@ class ListSelectDialog:
 
         self.deleteBtn = tk.Button(self.master, text="Delete", command=lambda: self._delete(self.listbox))
         self.deleteBtn.pack()
-        okBtn = tk.Button(self.master, text="Ok", command=self._on_close)
-        okBtn.pack()
-        # frame_okCancel = tk.Frame(self.master)
-        # okBtn = tk.Button(frame_okCancel, text="Ok", command=self._on_close)
-        # okBtn.grid(column=0, row=0)
-        # cancelBtn = tk.Button(frame_okCancel, text="Cancel", command=self._cancel)
-        # cancelBtn.grid(column=1, row=0)
-        # frame_okCancel.pack()
+        # okBtn = tk.Button(self.master, text="Ok", command=self._on_close)
+        # okBtn.pack()
+        frame_okCancel = tk.Frame(self.master)
+        okBtn = tk.Button(frame_okCancel, text="Ok", command=self._on_close)
+        okBtn.grid(column=0, row=0)
+        cancelBtn = tk.Button(frame_okCancel, text="Cancel", command=self._cancel)
+        cancelBtn.grid(column=1, row=0)
+        frame_okCancel.pack()
 
         self.master.grab_set()
         self.master.wait_window(self.master)
@@ -220,17 +220,14 @@ class Graph:
         filemenu.add_command(label="Close", command=self.filemenu_Close)
         filemenu.add_separator()
         filemenu.add_command(label="Export to .mat", command=self.filemenu_ExportMat)
-        #saveas_submenu = tk.Menu(filemenu, tearoff=0)
-        #saveas_submenu.add_command(label="Save as .mat", command=self.filemenu_SaveAsMat)
-        #saveas_submenu.add_command(label="Save as .txt")
-        #saveas_submenu.add_command(label="Save as image", command=self.filemenu_SaveAsImage)
-        #filemenu.add_cascade(label="Save As", menu=saveas_submenu)
+        #filemenu.add_command(label="Save as .txt")
         #filemenu.add_separator()
         #filemenu.add_command(label="Print")
         self.menubar.add_cascade(label="File", menu=filemenu)
 
         editmenu = tk.Menu(self.menubar, tearoff=0)
         editmenu.add_command(label="Delete line...", command=self.editmenu_DeleteLine)
+        editmenu.add_command(label="Rename line...", command=self.editmenu_RenameLine)
         linewidth_submenu = tk.Menu(editmenu, tearoff=0)
         linewidth_submenu.add_command(label="Ultrathin", command=lambda: self.linewidth(0.5))
         linewidth_submenu.add_command(label="Thin", command=lambda: self.linewidth(1.0))
@@ -283,22 +280,6 @@ class Graph:
         filename = filedialog.asksaveasfilename(**options)
         if filename:
             sio.savemat(filename, line_dict)
-
-    # def filemenu_SaveAsImage(self):
-    #     fileTypes = [("PNG","*.png"), \
-    #         ("JPG", "*.jpg"), \
-    #         ("SVG", "*.svg"), \
-    #         ("TIF", "*.tif"), \
-    #         ("All files","*.*")]
-    #     options = {}
-    #     options['initialdir'] = os.path.expanduser('~')
-    #     options['filetypes'] = fileTypes
-    #     options['initialfile'] = ""
-    #     options['parent'] = self.master
-    #     f = filedialog.asksaveasfilename(**options)
-    #     if f:
-    #         self.fig.savefig(f)
-    #         self.filename, self.file_ext = os.path.splitext(f)
             
     def editmenu_DeleteLine(self):
         linelist = []
@@ -309,6 +290,10 @@ class Graph:
         if delete != None:
             for item in delete:
                 self.clear(item)
+
+    def editmenu_RenameLine(self):
+        
+        return
 
     def insertmenu_XLabel(self):
         label = simpledialog.askstring("Edit X Label","Wrap LaTeX in $", parent=self.master, initialvalue=self.ax.get_xlabel())
