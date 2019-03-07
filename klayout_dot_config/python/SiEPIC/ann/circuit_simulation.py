@@ -7,7 +7,7 @@ from matplotlib.figure import Figure
 
 from SiEPIC.ann import getSparams as gs
 from SiEPIC.ann import NetlistDiagram
-from SiEPIC.ann.graph import Graph
+from SiEPIC.ann.graphing.graph import Graph
 
 import numpy as np
 import os
@@ -47,6 +47,7 @@ class CircuitAnalysisGUI():
         self.init_figures()
         # Get s parameters and frequencies (generates the netlist, too).
         self.s, self.f = gs.getSparams()
+        self.plotFrequency = False
         # Update magnitude and phase generates the netlist, and therefore
         # need to be placed before generate_schematic
         self.set_controls()
@@ -55,6 +56,12 @@ class CircuitAnalysisGUI():
         # Now that everything is in place, show the window.
         self.parent.after(0, self.parent.deiconify)
         
+    def plotByFrequency(self):
+        self.plotFrequency = True
+
+    def plotByWavelength(self):
+        self.plotFrequency = False
+
     def init_figures(self):
         # Schematic figure initialization
         self.schematic_height = 920
@@ -95,17 +102,25 @@ class CircuitAnalysisGUI():
         openPhase = tk.Button(self.controls, text="Phase", command=self.open_phase)
         openPhase.grid(row=2, column=1)
 
+    def frequencyToWavelength(self, frequencies):
+        c = 299792458
+        return c / frequencies
+
     def update_magnitude(self, fromPort=0, toPort=0, name=None):
         # Get s parameters and frequencies
         #s, f = gs.getSparams()
         s, f = self.s, self.f
-        # Convert from Hz to THz
-        tera = 1e12
-        f = np.divide(f, tera)
-        # Clear whatever is on the plot, overlay new graph
-        self.magnitude.plot(f, abs(s[:,fromPort,toPort])**2, name)
-        # Label the plot
-        self.magnitude.xlabel('Frequency (THz)')
+        ######### f = np.divide(f, tera)
+        # Clear whatever is on the plot, overlay new graph, and label the plot
+        if self.plotFrequency == True:
+            # Convert from Hz to THz
+            tera = 1e12
+            self.magnitude.plot(np.divide(f, tera), abs(s[:,fromPort,toPort])**2, name)
+            self.magnitude.xlabel('Frequency (THz)')
+        else:
+            nano = 1e9
+            self.magnitude.plot(self.frequencyToWavelength(f) * nano, abs(s[:,fromPort,toPort])**2, name)
+            self.magnitude.xlabel('Wavelength (nm)')
         self.magnitude.ylabel(r'$|A| ^2$')
         self.magnitude.title('Magnitude-Squared')
     
@@ -113,13 +128,16 @@ class CircuitAnalysisGUI():
         # Get s parameters and frequencies
         #s, f = gs.getSparams()
         s, f = self.s, self.f
-        # Convert from Hz to THz
-        tera = 1e12
-        f = np.divide(f, tera)
-        # Clear whatever is on the plot, overlay new graph
-        self.phase.plot(f, np.rad2deg(np.unwrap(np.angle(s[:,fromPort,toPort]))), name)
-        # Label the plot
-        self.phase.xlabel('Frequency (THz)')
+        # Clear whatever is on the plot, overlay new graph, and label the plot
+        if self.plotFrequency == True:
+            # Convert from Hz to THz
+            tera = 1e12
+            self.phase.plot(np.divide(f, tera), np.rad2deg(np.unwrap(np.angle(s[:,fromPort,toPort]))), name)
+            self.phase.xlabel('Frequency (THz)')
+        else:
+            nano = 1e9
+            self.phase.plot(self.frequencyToWavelength(f) * nano, np.rad2deg(np.unwrap(np.angle(s[:,fromPort,toPort]))), name)
+            self.phase.xlabel('Wavelength (nm)')
         self.phase.title('Phase')
 
     def open_schematic(self, event):
