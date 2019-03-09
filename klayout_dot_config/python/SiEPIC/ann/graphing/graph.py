@@ -20,7 +20,10 @@ import numpy as np
 import scipy.io as sio
 import os # For filedialog to start in user's /~ instead of /.
 
-from SiEPIC.ann.graphing.ListSelectDialog import ListSelectDeleteDialog, ListSelectRenameDialog
+try:
+    from SiEPIC.ann.graphing.ListSelectDialog import ListSelectDeleteDialog, ListSelectRenameDialog
+except:
+    from ListSelectDialog import ListSelectDeleteDialog, ListSelectRenameDialog
 
 class MenuItem:
     def __init__(self, label=None, callback=None):
@@ -262,8 +265,11 @@ class Graph:
             linelist.append(line.name)
         child_window = tk.Toplevel(self.master)
         orig, final = ListSelectRenameDialog(child_window).askrenamelist(linelist)
-        self.lines[orig].name = final
-        self.legend()
+        if final:
+            line = self.lines.pop(orig)
+            line.name = final
+            self.lines[final] = line
+            self.legend()
 
     def insertmenu_XLabel(self):
         label = simpledialog.askstring("Edit X Label","Wrap LaTeX in $", parent=self.master, initialvalue=self.ax.get_xlabel())
@@ -445,6 +451,25 @@ class Graph:
         self.ax.set_ylabel(ylabel)
         self.canvas.draw()
 
+    def get_lines(self):
+        """Returns all lines (DataSet) objects stored within the graph
+        Since these contain references to the line objects, they can be
+        altered and updated. This allows externally implemented menus to
+        access the data within the graph and perform operations on it, 
+        e.g. converting the x-axis from frequency to wavelength.
+        """
+
+        return self.lines
+
+    def refresh(self):
+        """Refreshes the axis plot. If data within the lines has changed,
+        the lines are redrawn and the plot rescaled to fit them.
+        """
+
+        self.ax.relim()
+        self.ax.autoscale_view()
+        self.canvas.draw()
+
 #########################################################################
 #                                                                       #
 #              TEST FUNCTIONS IF CODE IS RUN AS A SCRIPT                #
@@ -494,5 +519,33 @@ def test():
 
     root.mainloop()
 
+def stretch(x):
+    return -x * 5
+
+def test_conversion():
+    root = tk.Tk()
+    app = Graph(root)
+
+    t1 = np.arange(0, 3, .01)
+    y1 = 2 * np.sin(2 * np.pi * t1)
+    app.plot(t1, y1, "Sine")
+
+    t2 = np.arange(0, 6, .01)
+    y2 = 5 * np.cos(2 * np.pi * t2)
+    app.plot(t2, y2, "Cosine")
+
+    app.title("Frequency Response")
+    app.xlabel("Time (s)")
+    app.ylabel("Amplitude")
+
+    lines = app.get_lines()
+    for line in lines.values():
+        x = line.objectID.get_xdata()
+        line.objectID.set_xdata(stretch(x))
+    app.refresh()
+
+    root.mainloop()
+
 if __name__=="__main__":
     test()
+    test_conversion()
