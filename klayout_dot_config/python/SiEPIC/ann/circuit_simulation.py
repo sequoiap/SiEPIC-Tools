@@ -7,7 +7,7 @@ from matplotlib.figure import Figure
 
 from SiEPIC.ann import getSparams as gs
 from SiEPIC.ann import NetlistDiagram
-from SiEPIC.ann.graphing.graph import Graph
+from SiEPIC.ann.graphing.graph import Graph, DataSet, MenuItem
 
 import numpy as np
 import os
@@ -25,6 +25,10 @@ class TkRoot(tk.Tk):
         self.destroy()
 
 class CircuitAnalysisGUI():
+
+    # Some constants
+    tera = 1e12
+    nano = 1e9
 
     def __init__(self, parent):
         self.parent = parent
@@ -47,7 +51,7 @@ class CircuitAnalysisGUI():
         self.init_figures()
         # Get s parameters and frequencies (generates the netlist, too).
         self.s, self.f = gs.getSparams()
-        self.plotFrequency = False
+        self.plotFrequency = True
         # Update magnitude and phase generates the netlist, and therefore
         # need to be placed before generate_schematic
         self.set_controls()
@@ -57,10 +61,37 @@ class CircuitAnalysisGUI():
         self.parent.after(0, self.parent.deiconify)
         
     def plotByFrequency(self):
-        self.plotFrequency = True
+        if not self.plotFrequency:
+            self.plotFrequency = True
+            lines = self.magnitude.get_lines()
+            for line in lines.values():
+                x = line.objectID.get_xdata()
+                line.objectID.set_xdata(self.wavelengthToFrequency(x * CircuitAnalysisGUI.nano) / CircuitAnalysisGUI.tera)
+            self.magnitude.refresh()
+            self.magnitude.xlabel('Frequency (THz)')
+            lines = self.phase.get_lines()
+            for line in lines.values():
+                x = line.objectID.get_xdata()
+                line.objectID.set_xdata(self.wavelengthToFrequency(x * CircuitAnalysisGUI.nano) / CircuitAnalysisGUI.tera)
+            self.phase.refresh()
+            self.phase.xlabel('Frequency (THz)')
+
 
     def plotByWavelength(self):
-        self.plotFrequency = False
+        if self.plotFrequency:
+            self.plotFrequency = False
+            lines = self.magnitude.get_lines()
+            for line in lines.values():
+                x = line.objectID.get_xdata()
+                line.objectID.set_xdata(self.frequencyToWavelength(x * CircuitAnalysisGUI.tera) * CircuitAnalysisGUI.nano)
+            self.magnitude.refresh()
+            self.magnitude.xlabel('Wavelength (nm)')
+            lines = self.phase.get_lines()
+            for line in lines.values():
+                x = line.objectID.get_xdata()
+                line.objectID.set_xdata(self.frequencyToWavelength(x * CircuitAnalysisGUI.tera) * CircuitAnalysisGUI.nano)
+            self.phase.refresh()
+            self.phase.xlabel('Wavelength (nm)')
 
     def init_figures(self):
         # Schematic figure initialization
@@ -76,15 +107,21 @@ class CircuitAnalysisGUI():
         self.controls = tk.Frame(self.parent, width=700, height=30, bd=1)
         self.controls.grid(row=0, column=1)
 
+    def additional_menus(self):
+        functions = [MenuItem("Plot by frequency", self.plotByFrequency), MenuItem("Plot by wavelength", self.plotByWavelength)]
+        addon_menu = {"Data": functions}
+        return addon_menu
+
     def open_magnitude(self):
-        self.magnitude = Graph(self.parent, "Magnitude")
+        self.magnitude = Graph(self.parent, "Magnitude", additional_menus=self.additional_menus())
 
     def open_phase(self):
-        self.phase = Graph(self.parent, "Phase")
+        self.phase = Graph(self.parent, "Phase", additional_menus=self.additional_menus())
 
     def set_controls(self):
         options = NetlistDiagram.getExternalPortList()
-        thing1 = tk.Label(self.controls, text="From: ").grid(row=0, column=0)#.pack(side=tk.LEFT)
+        # thing1 = 
+        tk.Label(self.controls, text="From: ").grid(row=0, column=0)#.pack(side=tk.LEFT)
         self.first = tk.StringVar(self.parent)
         self.first.set(options[0])
         self.second = tk.StringVar(self.parent)
@@ -92,7 +129,8 @@ class CircuitAnalysisGUI():
         thing2 = tk.OptionMenu(self.controls, self.first, *options, command=self.selection_changed)
         thing2.config(width=20)
         thing2.grid(row=0, column=1)#.pack(side=tk.LEFT)
-        thing3 = tk.Label(self.controls, text=" to: ").grid(row=1, column=0)#.pack(side=tk.LEFT)
+        # thing3 = 
+        tk.Label(self.controls, text=" to: ").grid(row=1, column=0)#.pack(side=tk.LEFT)
         thing4 = tk.OptionMenu(self.controls, self.second, *options, command=self.selection_changed)
         thing4.config(width=20)
         thing4.grid(row=1, column=1)#.pack(side=tk.LEFT)
@@ -106,6 +144,10 @@ class CircuitAnalysisGUI():
         c = 299792458
         return c / frequencies
 
+    def wavelengthToFrequency(self, wavelengths):
+        c = 299792458
+        return c / wavelengths
+
     def update_magnitude(self, fromPort=0, toPort=0, name=None):
         # Get s parameters and frequencies
         #s, f = gs.getSparams()
@@ -113,12 +155,10 @@ class CircuitAnalysisGUI():
         # Clear whatever is on the plot, overlay new graph, and label the plot
         if self.plotFrequency == True:
             # Convert from Hz to THz
-            tera = 1e12
-            self.magnitude.plot(np.divide(f, tera), abs(s[:,fromPort,toPort])**2, name)
+            self.magnitude.plot(np.divide(f, CircuitAnalysisGUI.tera), abs(s[:,fromPort,toPort])**2, name)
             self.magnitude.xlabel('Frequency (THz)')
         else:
-            nano = 1e9
-            self.magnitude.plot(self.frequencyToWavelength(f) * nano, abs(s[:,fromPort,toPort])**2, name)
+            self.magnitude.plot(self.frequencyToWavelength(f) * CircuitAnalysisGUI.nano, abs(s[:,fromPort,toPort])**2, name)
             self.magnitude.xlabel('Wavelength (nm)')
         self.magnitude.ylabel(r'$|A| ^2$')
         self.magnitude.title('Magnitude-Squared')
@@ -130,12 +170,10 @@ class CircuitAnalysisGUI():
         # Clear whatever is on the plot, overlay new graph, and label the plot
         if self.plotFrequency == True:
             # Convert from Hz to THz
-            tera = 1e12
-            self.phase.plot(np.divide(f, tera), np.rad2deg(np.unwrap(np.angle(s[:,fromPort,toPort]))), name)
+            self.phase.plot(np.divide(f, CircuitAnalysisGUI.tera), np.rad2deg(np.unwrap(np.angle(s[:,fromPort,toPort]))), name)
             self.phase.xlabel('Frequency (THz)')
         else:
-            nano = 1e9
-            self.phase.plot(self.frequencyToWavelength(f) * nano, np.rad2deg(np.unwrap(np.angle(s[:,fromPort,toPort]))), name)
+            self.phase.plot(self.frequencyToWavelength(f) * CircuitAnalysisGUI.nano, np.rad2deg(np.unwrap(np.angle(s[:,fromPort,toPort]))), name)
             self.phase.xlabel('Wavelength (nm)')
         self.phase.title('Phase')
 
