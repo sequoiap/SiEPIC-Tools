@@ -110,7 +110,6 @@ class CircuitAnalysisGUI():
         # Get s parameters and frequencies
         #s, f = gs.getSparams()
         s, f = self.s, self.f
-        ######### f = np.divide(f, tera)
         # Clear whatever is on the plot, overlay new graph, and label the plot
         if self.plotFrequency == True:
             # Convert from Hz to THz

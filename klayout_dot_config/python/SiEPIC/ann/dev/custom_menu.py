@@ -1,6 +1,6 @@
 import tkinter as tk
 
-class MenuItems:
+class MenuItem:
     def __init__(self, label=None, callback=None):
         self.label = label
         self.callback = callback
@@ -61,8 +61,8 @@ def sleep():
 if __name__=="__main__":
     root = tk.Tk()
 
-    talkingMenu = [MenuItems("Hello", sayHello), MenuItems("Goodbye", sayGoodbye), MenuItems("Greeting", greet)]
-    clockMenu = [MenuItems("Snooze", snooze), MenuItems("Alarm", alarm), MenuItems("Sleep", sleep)]
+    talkingMenu = [MenuItem("Hello", sayHello), MenuItem("Goodbye", sayGoodbye), MenuItem("Greeting", greet)]
+    clockMenu = [MenuItem("Snooze", snooze), MenuItem("Alarm", alarm), MenuItem("Sleep", sleep)]
     newmenus = {"Chatterbox": talkingMenu, "Clock": clockMenu}
 
     app = Window(root, additional_menus=newmenus)
