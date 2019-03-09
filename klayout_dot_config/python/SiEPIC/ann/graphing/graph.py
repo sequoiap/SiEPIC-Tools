@@ -22,6 +22,11 @@ import os # For filedialog to start in user's /~ instead of /.
 
 from SiEPIC.ann.graphing.ListSelectDialog import ListSelectDeleteDialog, ListSelectRenameDialog
 
+class MenuItem:
+    def __init__(self, label=None, callback=None):
+        self.label = label
+        self.callback = callback
+
 class DataSet:
     """
     The DataSet class is used to allow the Graph to conveniently store and access multiple lines.
@@ -116,7 +121,7 @@ class Graph:
     #                                                                       #
     #########################################################################
 
-    def __init__(self, parent: tk.Toplevel, window_title=None):
+    def __init__(self, parent: tk.Toplevel, window_title=None, additional_menus=None):
         # The master tk object
         self.parent = parent
         self.master = tk.Toplevel(parent)
@@ -140,7 +145,7 @@ class Graph:
         
         # Setup the plot area, stored lines, and setup the menu now that all variables exist.
         self.reset()
-        self.init_menu()
+        self.init_menu(additional_menus=additional_menus)
         self.master.config(menu=self.menubar)
 
     def reset(self):
@@ -163,7 +168,7 @@ class Graph:
     #                                                                       #
     #########################################################################
 
-    def init_menu(self):
+    def init_menu(self, additional_menus=None):
         filemenu = tk.Menu(self.menubar, tearoff=0)
         filemenu.add_command(label="New", command=self.filemenu_New)
         #filemenu.add_command(label="Open", command=self.filemenu_Open)
@@ -199,6 +204,16 @@ class Graph:
         insertmenu.add_separator()
         insertmenu.add_checkbutton(label="Legend", onvalue=True, offvalue=False, variable=self.hasLegend, command=self.legend)
         self.menubar.add_cascade(label="Insert", menu=insertmenu)
+
+        # An "additional_menu" is a dictionary where each key is the name of the cascade
+        # to be added, and its corresponding value is a list of MenuItem objects (each as a name and a callback function).
+        if additional_menus != None:
+            for cascade in additional_menus:
+                cascade_menu = tk.Menu(self.menubar, tearoff=0)
+                commands = additional_menus[cascade]
+                for item in commands:
+                    cascade_menu.add_command(label=item.label, command=item.callback)
+                self.menubar.add_cascade(label=cascade, menu=cascade_menu)
 
         helpmenu = tk.Menu(self.menubar, tearoff=0)
         helpmenu.add_command(label="About")
@@ -436,11 +451,33 @@ class Graph:
 #                                                                       #
 #########################################################################
 
+def sayHello():
+    print("Hello, world!")
+
+def sayGoodbye():
+    print("Goodbye, world!")
+
+def greet():
+    print("What's up?")
+
+def snooze():
+    print("Snoozing for 15 minutes")
+
+def alarm():
+    print("annoying sounds!")
+
+def sleep():
+    print("Time for bed!")
+
 def test(): 
     root = tk.Tk()
 
+    talkingMenu = [MenuItem("Hello", sayHello), MenuItem("Goodbye", sayGoodbye), MenuItem("Greeting", greet)]
+    clockMenu = [MenuItem("Snooze", snooze), MenuItem("Alarm", alarm), MenuItem("Sleep", sleep)]
+    newmenus = {"Chatterbox": talkingMenu, "Clock": clockMenu}
+
     #app = Graph(tk.Toplevel(root))
-    app = Graph(root)
+    app = Graph(root, additional_menus=newmenus)
 
     t1 = np.arange(0, 3, .01)
     y1 = 2 * np.sin(2 * np.pi * t1)
