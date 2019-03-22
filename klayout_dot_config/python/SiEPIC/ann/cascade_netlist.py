@@ -3,6 +3,7 @@ import datetime
 import os
 import sys
 import numpy as np
+import matplotlib.pyplot as plt
 import math as m
 import cmath as cm
 import pya
@@ -105,6 +106,34 @@ class Cell():
         alpha = 0 #assuming lossless waveguide
         wl = np.true_divide(c0,self.f)
         neff = wn.getWaveguideIndex(model,np.transpose(wl),width,thickness,mode)
+        print(neff[10:20])
+        K = alpha + (2*m.pi*np.true_divide(neff,wl))*1j
+        for x in range(0, len(neff)):
+          mat[x,0,1] = mat[x,1,0] = cm.exp(-K[x] * complex(self.wglen))
+        self.s = mat
+        
+    def wgSparamLum(self):
+        filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "sparams/WaveGuideTETMStrip,w=500,h=220.txt")
+        with open(filename, 'r') as f:
+          coeffs = f.readline().split()
+        c0 = 299792458 #m/s
+        mat = np.zeros((len(self.f),2,2), dtype=complex)
+        width = 0.5 #um
+        thickness = 0.22 #um
+        mode = 0 #TE
+        alpha = 0 #assuming lossless waveguide
+        wl = np.true_divide(c0,self.f)
+        wl_norm = wl - float(coeffs[0])
+        print(wl_norm[10:20])
+        neff = [0] * len(wl) #wn.getWaveguideIndex(model,np.transpose(wl),width,thickness,mode)
+        for i in range(1, len(coeffs)):
+          neff = neff + (float(coeffs[i]) * np.power(wl_norm, i-1))
+        #poly = float(coeffs[1]) + float(coeffs[2])*(wl - float(coeffs[0])) + float(coeffs[3])*np.power((wl - float(coeffs[0])),2) + float(coeffs[4])*np.power((wl - float(coeffs[0])), 3)+ float(coeffs[5])*np.power((wl - float(coeffs[0])),4)+ float(coeffs[6])*np.power((wl - float(coeffs[0])), 5)
+        #plt.plot(wl, neff, label='neff')
+        #plt.plot(wl, poly, label='poly')
+        #plt.legend()
+        #plt.show()
+        print(neff[10:20])
         K = alpha + (2*m.pi*np.true_divide(neff,wl))*1j
         for x in range(0, len(neff)):
           mat[x,0,1] = mat[x,1,0] = cm.exp(-K[x] * complex(self.wglen))
@@ -173,7 +202,7 @@ class Parser:
             filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "sparams/Ybranch_Thickness =220 width=500.sparam")
             _, f = pya.Cell.Reader.readSparamData(filename, 3, False)
             newCell.f = np.linspace(f[0], f[-1], 1000)
-            newCell.wgSparam()
+            newCell.wgSparamLum()
         self.cellList.append(newCell)
 
     def cascadeCells(self):
