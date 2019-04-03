@@ -13,7 +13,7 @@ freqname = 'freq' + fname + '.mat'
 orig_cwd = os.getcwd()
 temp_cwd = os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp")
 
-def getSparams():
+def generateNetlist():
     # First, change the current working directory because we'll be saving files
     os.chdir(temp_cwd)
     # Get the current topcell from Klayout
@@ -25,8 +25,12 @@ def getSparams():
     fid = open(netname, 'w')
     fid.write(text_subckt)
     fid.close()
+
+def getSparams(regenerate_netlist=True):
+    if regenerate_netlist:
+        generateNetlist()
     # Get sparams and freq array from netlist
-    s, f = cell.Params.get_sparameters(netname) 
+    s, f = cn.Params.get_sparameters(netname) 
     # Change the working directory back to what it was originally, 
     # out of politeness and an abundance of caution
     os.chdir(orig_cwd)
