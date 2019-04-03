@@ -50,7 +50,7 @@ class CircuitAnalysisGUI():
         self.create_menu()
         self.init_figures()
         # Get s parameters and frequencies (generates the netlist, too).
-        self.s, self.f = gs.getSparams()
+        self.s, self.f = gs.getSparams(regenerate_netlist=True)
         self.plotFrequency = True
         # Update magnitude and phase generates the netlist, and therefore
         # need to be placed before generate_schematic
@@ -192,7 +192,7 @@ class CircuitAnalysisGUI():
         os.chdir(wd)
     
     def port2idx(self, port):
-        port = -port;
+        port = -port
         print(self.ports)
         port = str(port)
         if port in self.ports:
@@ -245,6 +245,21 @@ def circuit_analysis():
     root = TkRoot()
     app = CircuitAnalysisGUI(root)
     root.mainloop()
+
+class TimeANN:
+    def __init__(self):
+        self.root = TkRoot()
+
+    def time_circuit_analysis(self):
+        self.app = CircuitAnalysisGUI(self.root)
     
 if __name__ == "__main__":
-    circuit_analysis()
+    import timeit    
+    setup="""\
+import os
+print(os.getcwd())
+from SiEPIC.ann.circuit_simulation import TimeANN
+obj = TimeANN()
+"""
+    time = timeit.timeit('obj.time_circuit_analysis()', setup=setup, number=1)
+    print(time)
