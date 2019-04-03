@@ -19,7 +19,7 @@ def getSparams():
     # Get the current topcell from Klayout
     cell = pya.Application.instance().main_window().current_view().active_cellview().cell
     # Get the netlist from the cell
-    text_subckt, text_main = cell.spice_netlist_export(verbose=True)
+    text_subckt, text_main, = cell.spice_netlist_export(verbose=True)
     #print(dir(cell))
     # Write the netlist to a temporary file
     fid = open(netname, 'w')
@@ -60,7 +60,8 @@ def plot_phase():
     import matplotlib.pyplot as plt
     import numpy as np
     s, f = getSparams()
-    plt.plot(f, np.rad2deg(np.unwrap(np.angle(s[:,0,2]))))
+    #plt.plot(f, np.rad2deg(np.unwrap(np.angle(s[:,0,2]))))
+    plt.plot(f, np.unwrap(np.angle(s[:,0,2])))
     plt.xlabel('Frequency (THz)')
     plt.title('Phase (deg)')
     plt.show()
