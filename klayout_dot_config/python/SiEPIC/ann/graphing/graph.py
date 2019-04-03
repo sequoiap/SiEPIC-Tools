@@ -23,7 +23,10 @@ import os # For filedialog to start in user's /~ instead of /.
 try:
     from SiEPIC.ann.graphing.ListSelectDialog import ListSelectDeleteDialog, ListSelectRenameDialog
 except:
-    from ListSelectDialog import ListSelectDeleteDialog, ListSelectRenameDialog
+    try:
+        from ListSelectDialog import ListSelectDeleteDialog, ListSelectRenameDialog
+    except:
+        from graphing.ListSelectDialog import ListSelectDeleteDialog, ListSelectRenameDialog
 
 class MenuItem:
     def __init__(self, label=None, callback=None):
