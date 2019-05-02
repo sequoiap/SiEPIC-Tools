@@ -86,7 +86,7 @@ class ListSelectRenameDialog:
         if self.success:
             return self.original, self.final
         else:
-            return None
+            return None, None
 
     def _rename(self, listbox: tk.Listbox):
         selection = listbox.curselection()[0]

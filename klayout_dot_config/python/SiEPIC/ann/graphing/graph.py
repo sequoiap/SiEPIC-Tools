@@ -20,7 +20,18 @@ import numpy as np
 import scipy.io as sio
 import os # For filedialog to start in user's /~ instead of /.
 
-from SiEPIC.ann.graphing.ListSelectDialog import ListSelectDeleteDialog, ListSelectRenameDialog
+try:
+    from SiEPIC.ann.graphing.ListSelectDialog import ListSelectDeleteDialog, ListSelectRenameDialog
+except:
+    try:
+        from ListSelectDialog import ListSelectDeleteDialog, ListSelectRenameDialog
+    except:
+        from graphing.ListSelectDialog import ListSelectDeleteDialog, ListSelectRenameDialog
+
+class MenuItem:
+    def __init__(self, label=None, callback=None):
+        self.label = label
+        self.callback = callback
 
 class DataSet:
     """
@@ -116,7 +127,7 @@ class Graph:
     #                                                                       #
     #########################################################################
 
-    def __init__(self, parent: tk.Toplevel, window_title=None):
+    def __init__(self, parent: tk.Toplevel, window_title=None, additional_menus=None):
         # The master tk object
         self.parent = parent
         self.master = tk.Toplevel(parent)
@@ -140,7 +151,7 @@ class Graph:
         
         # Setup the plot area, stored lines, and setup the menu now that all variables exist.
         self.reset()
-        self.init_menu()
+        self.init_menu(additional_menus=additional_menus)
         self.master.config(menu=self.menubar)
 
     def reset(self):
@@ -163,7 +174,7 @@ class Graph:
     #                                                                       #
     #########################################################################
 
-    def init_menu(self):
+    def init_menu(self, additional_menus=None):
         filemenu = tk.Menu(self.menubar, tearoff=0)
         filemenu.add_command(label="New", command=self.filemenu_New)
         #filemenu.add_command(label="Open", command=self.filemenu_Open)
@@ -199,6 +210,16 @@ class Graph:
         insertmenu.add_separator()
         insertmenu.add_checkbutton(label="Legend", onvalue=True, offvalue=False, variable=self.hasLegend, command=self.legend)
         self.menubar.add_cascade(label="Insert", menu=insertmenu)
+
+        # An "additional_menu" is a dictionary where each key is the name of the cascade
+        # to be added, and its corresponding value is a list of MenuItem objects (each as a name and a callback function).
+        if additional_menus != None:
+            for cascade in additional_menus:
+                cascade_menu = tk.Menu(self.menubar, tearoff=0)
+                commands = additional_menus[cascade]
+                for item in commands:
+                    cascade_menu.add_command(label=item.label, command=item.callback)
+                self.menubar.add_cascade(label=cascade, menu=cascade_menu)
 
         helpmenu = tk.Menu(self.menubar, tearoff=0)
         helpmenu.add_command(label="About")
@@ -247,8 +268,11 @@ class Graph:
             linelist.append(line.name)
         child_window = tk.Toplevel(self.master)
         orig, final = ListSelectRenameDialog(child_window).askrenamelist(linelist)
-        self.lines[orig].name = final
-        self.legend()
+        if final:
+            line = self.lines.pop(orig)
+            line.name = final
+            self.lines[final] = line
+            self.legend()
 
     def insertmenu_XLabel(self):
         label = simpledialog.askstring("Edit X Label","Wrap LaTeX in $", parent=self.master, initialvalue=self.ax.get_xlabel())
@@ -430,17 +454,58 @@ class Graph:
         self.ax.set_ylabel(ylabel)
         self.canvas.draw()
 
+    def get_lines(self):
+        """Returns all lines (DataSet) objects stored within the graph
+        Since these contain references to the line objects, they can be
+        altered and updated. This allows externally implemented menus to
+        access the data within the graph and perform operations on it, 
+        e.g. converting the x-axis from frequency to wavelength.
+        """
+
+        return self.lines
+
+    def refresh(self):
+        """Refreshes the axis plot. If data within the lines has changed,
+        the lines are redrawn and the plot rescaled to fit them.
+        """
+
+        self.ax.relim()
+        self.ax.autoscale_view()
+        self.canvas.draw()
+
 #########################################################################
 #                                                                       #
 #              TEST FUNCTIONS IF CODE IS RUN AS A SCRIPT                #
 #                                                                       #
 #########################################################################
 
+def sayHello():
+    print("Hello, world!")
+
+def sayGoodbye():
+    print("Goodbye, world!")
+
+def greet():
+    print("What's up?")
+
+def snooze():
+    print("Snoozing for 15 minutes")
+
+def alarm():
+    print("annoying sounds!")
+
+def sleep():
+    print("Time for bed!")
+
 def test(): 
     root = tk.Tk()
 
+    talkingMenu = [MenuItem("Hello", sayHello), MenuItem("Goodbye", sayGoodbye), MenuItem("Greeting", greet)]
+    clockMenu = [MenuItem("Snooze", snooze), MenuItem("Alarm", alarm), MenuItem("Sleep", sleep)]
+    newmenus = {"Chatterbox": talkingMenu, "Clock": clockMenu}
+
     #app = Graph(tk.Toplevel(root))
-    app = Graph(root)
+    app = Graph(root, additional_menus=newmenus)
 
     t1 = np.arange(0, 3, .01)
     y1 = 2 * np.sin(2 * np.pi * t1)
@@ -457,5 +522,33 @@ def test():
 
     root.mainloop()
 
+def stretch(x):
+    return -x * 5
+
+def test_conversion():
+    root = tk.Tk()
+    app = Graph(root)
+
+    t1 = np.arange(0, 3, .01)
+    y1 = 2 * np.sin(2 * np.pi * t1)
+    app.plot(t1, y1, "Sine")
+
+    t2 = np.arange(0, 6, .01)
+    y2 = 5 * np.cos(2 * np.pi * t2)
+    app.plot(t2, y2, "Cosine")
+
+    app.title("Frequency Response")
+    app.xlabel("Time (s)")
+    app.ylabel("Amplitude")
+
+    lines = app.get_lines()
+    for line in lines.values():
+        x = line.objectID.get_xdata()
+        line.objectID.set_xdata(stretch(x))
+    app.refresh()
+
+    root.mainloop()
+
 if __name__=="__main__":
     test()
+    test_conversion()
