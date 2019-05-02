@@ -64,7 +64,8 @@ def plot_phase():
     import matplotlib.pyplot as plt
     import numpy as np
     s, f = getSparams()
-    plt.plot(f, np.rad2deg(np.unwrap(np.angle(s[:,0,2]))))
+    #plt.plot(f, np.rad2deg(np.unwrap(np.angle(s[:,0,2]))))
+    plt.plot(f, np.unwrap(np.angle(s[:,0,2])))
     plt.xlabel('Frequency (THz)')
     plt.title('Phase (deg)')
     plt.show()
