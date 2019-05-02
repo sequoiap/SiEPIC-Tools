@@ -107,12 +107,12 @@ def spice_netlist_export(self, verbose=False, opt_in_selection_text=[]):
     text_subckt += '.ends %s\n\n' % (circuit_name)
     return text_subckt, text_main
 
-pya.Cell.spice_netlist_export = spice_netlist_export
+pya.Cell.spice_netlist_export_ann = spice_netlist_export
 
 def main():
   cell = pya.Application.instance().main_window().current_view().active_cellview().cell
-  text_subckt, text_main = cell.spice_netlist_export(verbose=True)
-  cell.spice_netlist_export()
+  text_subckt, text_main = cell.spice_netlist_export_ann(verbose=True)
+  cell.spice_netlist_export_ann()
   print("***TEXT_SUBCKT***")
   print(text_subckt)
   print("***TEXT_MAIN***")
