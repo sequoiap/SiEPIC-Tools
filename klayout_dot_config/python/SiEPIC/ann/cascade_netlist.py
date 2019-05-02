@@ -65,6 +65,7 @@ class DEVTYPE(Enum):
     DC = 'ebeam_dc_halfring_te1550'
     GC = 'ebeam_gc_te1550'
     YB = 'ebeam_y_1550'
+    TR = 'ebeam_terminator_te1550'
 
 class Cell():
     def __init__(self, id):
@@ -88,6 +89,8 @@ class Cell():
             isgc = True
         elif self.devType == DEVTYPE.YB.value:
             filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "sparams/Ybranch_Thickness =220 width=500.sparam")
+        elif self.devType == DEVTYPE.TR.value:
+            filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "sparams/nanotaper_w1=500,w2=60,L=10_TE.sparam")
         else:
             print("ERROR: Unknown Device Type")
             return
@@ -209,7 +212,7 @@ class Parser:
             filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "sparams/Ybranch_Thickness =220 width=500.sparam")
             _, f = pya.Cell.Reader.readSparamData(filename, 3, False)
             newCell.f = np.linspace(f[0], f[-1], 1000)
-            newCell.wgSparamLum()
+            newCell.wgSparam()
         self.cellList.append(newCell)
 
     def cascadeCells(self):
