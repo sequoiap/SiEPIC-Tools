@@ -115,39 +115,30 @@ class Cell():
           mat[x,0,1] = mat[x,1,0] = cm.exp(-K[x] * complex(self.wglen))
         self.s = mat
         
+    #calculate waveguide s-parameters based on SiEPIC's compact model
     def wgSparamLum(self):
         filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "sparams/WaveGuideTETMStrip,w=500,h=220.txt")
-        with open(filename, 'r') as f:
+        with open(filename, 'r') as f:#read info from waveguide s-param file
           coeffs = f.readline().split()
+        
+        mat = np.zeros((len(self.f),2,2), dtype=complex) #initialize array to hold s-params
+        
         c0 = 299792458 #m/s
-        mat = np.zeros((len(self.f),2,2), dtype=complex)
-        width = 0.5 #um
-        thickness = 0.22 #um
-        mode = 0 #TE
-        alpha = 0 #assuming lossless waveguide
-        wl = np.true_divide(c0,self.f)
-        neff = 4.19088
-        freq = np.asarray(self.f) * 2 * m.pi
-        print(freq[10:20])
-        ne = 2.44553;
-        ng = 4.19088;
         
-        #nd = 0; %0.000354275;
-        #lambda = x_phase1*1e-9; %put wavelength in terms of 'm'
-
-        #L = 50e-6; %waveguide length (m)
-        #c0 = 299792458;
-        w0 = (2*m.pi*c0) / 1.55e-6 #center frequency (2*pi*c / 1550nm)
-        print(w0)
-        print(freq[10:20] - w0)
-        #w = (2*pi*c0)./lambda; %array of frequencies
-        #phi = (L/c0).*(ne.*w0 + ng.*(w - w0) + (nd/2).*(w - w0).^2);
+        w = np.asarray(self.f) * 2 * m.pi #get angular frequency from frequency
+        lam0 = float(coeffs[0]) #center wavelength
+        w0 = (2*m.pi*c0) / lam0 #center frequency (angular)
         
-        #K = alpha + (2*m.pi*np.true_divide(neff,wl))*1j
-        K = (1/c0) * (ne*w0 + ng*(freq - w0))
-        for x in range(0, len(self.f)):
-          mat[x,0,1] = mat[x,1,0] = cm.exp(-K[x] * complex(self.wglen) * 1j)
-        self.s = mat        
+        ne = float(coeffs[1]) #effective index
+        ng = float(coeffs[3]) #group index
+        nd = float(coeffs[5]) #group dispersion
+        
+        K = 2*m.pi*ne/lam0 + (ng/c0)*(w - w0) - (nd*lam0**2/(4*m.pi*c0))*((w - w0)**2) #calculation of K
+        
+        for x in range(0, len(self.f)): #build s-matrix from K and waveguide length
+          mat[x,0,1] = mat[x,1,0] = cm.exp(K[x] * complex(self.wglen) * 1j)
+        
+        self.s = mat #set cell s-matrix       
 
     def printPorts(self):
         print("DEVICE ID:", self.deviceID, "has", len(self.p), "port(s).")
@@ -212,7 +203,7 @@ class Parser:
             filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "sparams/Ybranch_Thickness =220 width=500.sparam")
             _, f = pya.Cell.Reader.readSparamData(filename, 3, False)
             newCell.f = np.linspace(f[0], f[-1], 1000)
-            newCell.wgSparam()
+            newCell.wgSparamLum()
         self.cellList.append(newCell)
 
     def cascadeCells(self):
