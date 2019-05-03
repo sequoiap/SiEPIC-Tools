@@ -70,12 +70,12 @@ def plot_phase():
     plt.title('Phase (deg)')
     plt.show()
 
-def create_matlab_files():
-    import scipy.io as sio
-    # First, change the current working directory because we'll be saving files
-    os.chdir(temp_cwd)
-    sio.savemat(matname, mdict={'sparams':s})
-    sio.savemat(freqname, mdict={'freq':f})
-    # Change the working directory back to what it was originally, 
-    # out of politeness and an abundance of caution
-    os.chdir(orig_cwd)
+# def create_matlab_files():
+#     import scipy.io as sio
+#     # First, change the current working directory because we'll be saving files
+#     os.chdir(temp_cwd)
+#     sio.savemat(matname, mdict={'sparams':s})
+#     sio.savemat(freqname, mdict={'freq':f})
+#     # Change the working directory back to what it was originally, 
+#     # out of politeness and an abundance of caution
+#     os.chdir(orig_cwd)
