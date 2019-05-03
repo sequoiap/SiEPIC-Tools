@@ -7,7 +7,8 @@ from matplotlib.figure import Figure
 
 from SiEPIC.ann import getSparams as gs
 from SiEPIC.ann import NetlistDiagram
-from SiEPIC.ann.graphing.graph import Graph, DataSet, MenuItem
+from SiEPIC.ann.layout.graphing.graph import Graph, DataSet, MenuItem
+import SiEPIC._globals as glob
 
 import numpy as np
 import os
@@ -119,7 +120,7 @@ class CircuitAnalysisGUI():
         self.phase = Graph(self.parent, "Phase", additional_menus=self.additional_menus())
 
     def set_controls(self):
-        options = NetlistDiagram.getExternalPortList()
+        options, _ = NetlistDiagram.getExternalPortList()
         # thing1 = 
         tk.Label(self.controls, text="From: ").grid(row=0, column=0)#.pack(side=tk.LEFT)
         self.first = tk.StringVar(self.parent)
@@ -180,7 +181,7 @@ class CircuitAnalysisGUI():
     def open_schematic(self, event):
         import subprocess, os, sys
         wd = os.getcwd()
-        temppath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp")
+        temppath = glob.TEMP_FOLDER
         os.chdir(temppath)
         filepath = "Schematic.png"
         if sys.platform.startswith('darwin'):
@@ -209,7 +210,7 @@ class CircuitAnalysisGUI():
     def generate_schematic(self):
         NetlistDiagram.run()
         wd = os.getcwd()
-        temppath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp")
+        temppath = glob.TEMP_FOLDER
         os.chdir(temppath)
         original = Image.open("Schematic.png")
         resized = original.resize((870, 895), Image.ANTIALIAS)
@@ -219,6 +220,12 @@ class CircuitAnalysisGUI():
         label.bind("<Button-1>", self.open_schematic)
         label.pack()
         os.chdir(wd)
+
+        import SiEPIC.ann.layout.schematic as schem
+        _, comp = NetlistDiagram.getExternalPortList()
+        fig = schem.SchematicDrawer(self.parent, comp)
+        fig.draw()
+
     
     def _quit(self):
         self.parent.withdraw()

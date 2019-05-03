@@ -5,13 +5,14 @@ import pya
 import os
 from SiEPIC.ann import export_netlist as en # import this!
 from SiEPIC.ann import cascade_netlist as cn # import this!
+import SiEPIC._globals as glob
 
 fname = 'singleComp0'
 netname = '_netlist' + fname + '.txt'
 matname = fname + '.mat'
 freqname = 'freq' + fname + '.mat'
 orig_cwd = os.getcwd()
-temp_cwd = os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp")
+temp_cwd = glob.TEMP_FOLDER
 
 def generateNetlist():
     # First, change the current working directory because we'll be saving files
@@ -19,7 +20,7 @@ def generateNetlist():
     # Get the current topcell from Klayout
     cell = pya.Application.instance().main_window().current_view().active_cellview().cell
     # Get the netlist from the cell
-    text_subckt, text_main, = cell.spice_netlist_export(verbose=True)
+    text_subckt, text_main = cell.spice_netlist_export_ann(verbose=True)
     #print(dir(cell))
     # Write the netlist to a temporary file
     fid = open(netname, 'w')
@@ -70,12 +71,12 @@ def plot_phase():
     plt.title('Phase (deg)')
     plt.show()
 
-def create_matlab_files():
-    import scipy.io as sio
-    # First, change the current working directory because we'll be saving files
-    os.chdir(temp_cwd)
-    sio.savemat(matname, mdict={'sparams':s})
-    sio.savemat(freqname, mdict={'freq':f})
-    # Change the working directory back to what it was originally, 
-    # out of politeness and an abundance of caution
-    os.chdir(orig_cwd)
+# def create_matlab_files():
+#     import scipy.io as sio
+#     # First, change the current working directory because we'll be saving files
+#     os.chdir(temp_cwd)
+#     sio.savemat(matname, mdict={'sparams':s})
+#     sio.savemat(freqname, mdict={'freq':f})
+#     # Change the working directory back to what it was originally, 
+#     # out of politeness and an abundance of caution
+#     os.chdir(orig_cwd)

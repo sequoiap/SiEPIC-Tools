@@ -21,7 +21,7 @@ import scipy.io as sio
 import os # For filedialog to start in user's /~ instead of /.
 
 try:
-    from SiEPIC.ann.graphing.ListSelectDialog import ListSelectDeleteDialog, ListSelectRenameDialog
+    from SiEPIC.ann.layout.graphing.ListSelectDialog import ListSelectDeleteDialog, ListSelectRenameDialog
 except:
     try:
         from ListSelectDialog import ListSelectDeleteDialog, ListSelectRenameDialog
