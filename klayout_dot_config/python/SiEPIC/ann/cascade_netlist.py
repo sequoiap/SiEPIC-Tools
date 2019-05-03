@@ -96,7 +96,7 @@ class Cell():
             return
         #if(self.devType != DEVTYPE.GC.value): #figure out how to parse GC devices
         s, f = pya.Cell.Reader.readSparamData(filename, len(self.p), isgc)
-        self.f = np.linspace(f[0], f[-1], 1000)
+        self.f = np.linspace(1.88e+14, 1.99e+14, 1000)
         func = interp1d(f, s, kind='cubic', axis=0)
         self.s = func(self.f)            
 
@@ -199,10 +199,7 @@ class Parser:
         if not newCell.iswg:
             newCell.readSparamFile()
         else:
-            #get f from another cell and do math for s
-            filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "sparams/Ybranch_Thickness =220 width=500.sparam")
-            _, f = pya.Cell.Reader.readSparamData(filename, 3, False)
-            newCell.f = np.linspace(f[0], f[-1], 1000)
+            newCell.f = np.linspace(1.88e+14, 1.99e+14, 1000)
             newCell.wgSparamLum()
         self.cellList.append(newCell)
 
@@ -264,9 +261,7 @@ pya.Cell.Params = Params
 
 def main():
   cell = Cell(1)
-  filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "sparams/Ybranch_Thickness =220 width=500.sparam")
-  _, f = pya.Cell.Reader.readSparamData(filename, 3, False)
-  cell.f = np.linspace(f[0], f[-1], 1000)
+  cell.f = np.linspace(1.88e+14, 1.99e+14, 1000)
   cell.wglen = 50e-6
   cell.wgSparamLum()
   print(cell.s)
