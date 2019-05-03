@@ -3,11 +3,13 @@ import datetime
 import os
 import SiEPIC._globals as glob
 
-class Cell():
+class Component():
     def __init__(self, id, label):
         self.deviceID = id
         self.label = label
         self.ports = []
+        self.posx = None
+        self.posy = None
 
     def printPorts(self):
         print("DEVICE ID:", self.deviceID, ", or", self.label, ", has", len(self.ports), "port(s).")
@@ -16,11 +18,11 @@ class Cell():
 
 class Parser():
     def __init__(self, filepath):
-        self.cellList = []
+        self.componentList = []
         self.nextID = 0
         self.filepath = filepath
 
-    def createCell(self):
+    def createComponent(self):
         pass
 
     def parseFile(self):
@@ -34,52 +36,60 @@ class Parser():
                 elif ("." in elements[0]) or ("*" in elements[0]):
                     continue
                 else:
-                    self.parseCell(elements)
+                    self.parseComponent(elements)
         
-    def parseCell(self, line):
-        newCell = Cell(self.nextID, line[0])
+    def parseComponent(self, line):
+        newComponent = Component(self.nextID, line[0])
         self.nextID += 1
         for item in line:
             if "N$" in item:
                 port = str(item).replace("N$", '')
-                newCell.ports.append(int(port))
-        self.cellList.append(newCell)
+                newComponent.ports.append(int(port))
+        indices = [line.index(i) for i in line if 'lay_x=' in i]
+        if len(indices) > 0:
+            newComponent.posx = float(line[indices[0]].replace('lay_x=',''))
+        indices = [line.index(i) for i in line if 'lay_y=' in i]
+        if len(indices) > 0:
+            newComponent.posy = float(line[indices[0]].replace('lay_y=',''))
+        self.componentList.append(newComponent)
 
-    def getCells(self):
-        return self.cellList
+    def getComponents(self):
+        return self.componentList
 
-    def getCellCount(self):
-        return len(self.cellList)
+    def getComponentCount(self):
+        return len(self.componentList)
         
     def getExternals(self):
         x = -1
         externals = []
         found = False
+        external_components = []
         while True:
-            for cell in self.cellList:
-                for port in cell.ports:
+            for component in self.componentList:
+                for port in component.ports:
                     if(port == x):
                         found = True
                         externals.append(-x)
                         x -= 1
+                        external_components.append(component)
             if(not found):
                 break
             found = False
-        return externals
+        return externals, external_components
             
 
 class DiagramMaker():
-    def __init__(self, cellList):
-        self.cellList = cellList
+    def __init__(self, componentList):
+        self.componentList = componentList
         self.portList = []
 
     def connectPorts(self):
         devices = []
         x = 0
         while True:
-            for cell in self.cellList:
-                if x in cell.ports:
-                    devices.append(cell)
+            for component in self.componentList:
+                if x in component.ports:
+                    devices.append(component)
             if len(devices) == 2:
                 self.portList.append((devices[0].deviceID, devices[1].deviceID))
                 devices = []
@@ -107,17 +117,17 @@ class DiagramMaker():
         temppath = glob.TEMP_FOLDER
         os.chdir(temppath)
         G = pgv.AGraph(overlap='false', size="20,20", ratio='fill')
-        for cell in self.cellList:
-            title = cell.label
+        for component in self.componentList:
+            title = component.label
             # Find all ports that have external connections
-            externals = [x for x in cell.ports if x < 0 ]
+            externals = [x for x in component.ports if x < 0 ]
             print(externals)
             if(len(externals) > 0):
                 additional = "\nExternal port numbers: "
                 for port in externals:
                     additional = additional + str(-port) + " "
                 title += additional
-            G.add_node(cell.deviceID, shape='box', label=title)
+            G.add_node(component.deviceID, shape='box', label=title)
         for connection in self.portList:
             x, y = connection
             G.add_edge(x, y)
@@ -138,10 +148,10 @@ def demo():
     netname = '_netlist' + fname + '.txt'
     test = Parser(netname)
     test.parseFile()
-    print("# of Cells:", test.getCellCount())
-    for cell in test.cellList:
-       cell.printPorts()
-    diagram = DiagramMaker(test.getCells())
+    print("# of Components:", test.getComponentCount())
+    for component in test.componentList:
+       component.printPorts()
+    diagram = DiagramMaker(test.getComponents())
     diagram.runDiagramMaker()
     os.chdir(wd)
     
@@ -153,9 +163,9 @@ def getExternalPortList():
     netname = '_netlist' + fname + '.txt'
     netlist = Parser(netname)
     netlist.parseFile()
-    externals = netlist.getExternals()
+    externals, components = netlist.getExternals()
     os.chdir(wd)
-    return externals
+    return externals, components
 
 def run():
     wd = os.getcwd()
@@ -165,7 +175,7 @@ def run():
     netname = '_netlist' + fname + '.txt'
     netlist = Parser(netname)
     netlist.parseFile()
-    diagram = DiagramMaker(netlist.getCells())
+    diagram = DiagramMaker(netlist.getComponents())
     diagram.runDiagramMaker()
     os.chdir(wd)
 

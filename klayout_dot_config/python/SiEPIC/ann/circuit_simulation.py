@@ -120,7 +120,7 @@ class CircuitAnalysisGUI():
         self.phase = Graph(self.parent, "Phase", additional_menus=self.additional_menus())
 
     def set_controls(self):
-        options = NetlistDiagram.getExternalPortList()
+        options, _ = NetlistDiagram.getExternalPortList()
         # thing1 = 
         tk.Label(self.controls, text="From: ").grid(row=0, column=0)#.pack(side=tk.LEFT)
         self.first = tk.StringVar(self.parent)
@@ -220,6 +220,12 @@ class CircuitAnalysisGUI():
         label.bind("<Button-1>", self.open_schematic)
         label.pack()
         os.chdir(wd)
+
+        import SiEPIC.ann.layout.schematic as schem
+        _, comp = NetlistDiagram.getExternalPortList()
+        fig = schem.SchematicDrawer(self.parent, comp)
+        fig.draw()
+
     
     def _quit(self):
         self.parent.withdraw()
