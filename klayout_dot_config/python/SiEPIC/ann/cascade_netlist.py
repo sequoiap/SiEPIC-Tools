@@ -15,10 +15,25 @@ from scipy import signal as sig
 from SiEPIC.ann import waveguideNN as wn
 from scipy.interpolate import splev, splrep, interp1d
 
+'''
+'path' and 'model' are the filepath to the waveguide ANN model and
+the model itself, respectively
+Both are used as global variables in the 'cascade_netlist' module
+'''
 path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "NN_SiO2_neff.h5")
 model = wn.loadWaveguideNN(path)
 
+
 def strToSci(str):
+    '''
+    local function to convert strings written in Klayout's exponent 
+    notation into floats
+    Args:
+        str (str): string to convert to float
+    Returns:
+        float representation of the input string
+    '''
+
     ex = str[-1]
     base = float(str[:-1])
     if(ex == 'm'):
@@ -29,6 +44,7 @@ def strToSci(str):
         return base * 1e-9
     else:
         return float(str(base) + ex)
+
 
 def findPortMatch(name, listofcells):
     cella = cellb = inda = indb = -1
@@ -60,12 +76,14 @@ def findPortMatch(name, listofcells):
                 break
     return [cella, inda, cellb, indb]
 
+
 class DEVTYPE(Enum):
     BDC = 'ebeam_bdc_te1550'
     DC = 'ebeam_dc_halfring_te1550'
     GC = 'ebeam_gc_te1550'
     YB = 'ebeam_y_1550'
     TR = 'ebeam_terminator_te1550'
+
 
 class Cell():
     def __init__(self, id):
@@ -77,6 +95,7 @@ class Cell():
         self.wgwid = None
         self.s = None
         self.f = []
+
 
     def readSparamFile(self):
         isgc = False
@@ -94,11 +113,11 @@ class Cell():
         else:
             print("ERROR: Unknown Device Type")
             return
-        #if(self.devType != DEVTYPE.GC.value): #figure out how to parse GC devices
         s, f = pya.Cell.Reader.readSparamData(filename, len(self.p), isgc)
         self.f = np.linspace(1.88e+14, 1.99e+14, 1000)
         func = interp1d(f, s, kind='cubic', axis=0)
         self.s = func(self.f)            
+
 
     def wgSparam(self):        
         c0 = 299792458 #m/s
@@ -115,6 +134,7 @@ class Cell():
           mat[x,0,1] = mat[x,1,0] = cm.exp(-K[x] * complex(self.wglen))
         self.s = mat
         
+
     #calculate waveguide s-parameters based on SiEPIC's compact model
     def wgSparamLum(self):
         filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "sparams/WaveGuideTETMStrip,w=500,h=220.txt")
@@ -140,28 +160,25 @@ class Cell():
         
         self.s = mat #set cell s-matrix       
 
+
     def printPorts(self):
         print("DEVICE ID:", self.deviceID, "has", len(self.p), "port(s).")
         print(self.p)
-        #for port in self.p:
-        #    print(port)
-        #if self.iswg:
-
-        #else:
-        #    print("DEVICE %d TYPE: %s" % (self.deviceID, self.devType))
-        #    if(self.devType != DEVTYPE.GC.value):
-        #        print(self.s[0])
 
 
 class Parser:
+
+
     def __init__(self, filepath):
         self.cellList = []
         self.nextID = 0
         self.filepath = filepath
         self.nports = 0
 
+
     def createCell(self):
         pass
+
 
     def parseFile(self):
         infile = open(self.filepath)
@@ -176,6 +193,7 @@ class Parser:
                 else:
                     self.parseCell(elements)
         
+
     def parseCell(self, line):
         newCell = Cell(self.nextID)
         self.nextID += 1
@@ -202,6 +220,7 @@ class Parser:
             newCell.f = np.linspace(1.88e+14, 1.99e+14, 1000)
             newCell.wgSparamLum()
         self.cellList.append(newCell)
+
 
     def cascadeCells(self):
         #loop through ports in cells and use skrf.connect_s or skrf.innerconnect_s
@@ -236,12 +255,27 @@ class Parser:
     def getCells(self):
         return self.cellList
 
+
     def getCellCount(self):
         return len(self.cellList)
 
 
 class Params:
+    '''
+    class to extend the pya.Cell class, allowing the Cell class
+    to parse a netlist and calculate s-parameters for the photonic 
+    circuit represented by the current top cell
+
+    also has a method to get the external ports of the circuit
+    for use in drawing schematics and plotting simulation 
+    results
+    '''
+
     def get_sparameters(filename):
+        '''
+
+        '''
+
         test = Parser(filename)
         test.parseFile()
         test.cascadeCells()
@@ -249,6 +283,7 @@ class Params:
         freq = test.cellList[0].f
         return (mat, freq)
         
+
     def get_ports(filename):
         test = Parser(filename)
         test.parseFile()
@@ -256,6 +291,7 @@ class Params:
         ports = test.cellList[0].p
         return ports
     
+
 pya.Cell.Params = Params
 
 
