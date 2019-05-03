@@ -3,6 +3,14 @@ import SiEPIC.extend as se
 import SiEPIC.core as cor
 
 def spice_netlist_export(self, verbose=False, opt_in_selection_text=[]):
+    '''
+    This function gathers information from the current top cell in Klayout into a netlist
+    for a photonic circuit. This netlist is used in simulations.
+
+    Most of this function comes from a function in 'lukasc-ubc/SiEPIC-Tools/klayout_dot_config/python/SiEPIC/extend.py' which does the
+    same thing. This function has parts of that one removed because they were not needed for our toolbox.
+    '''
+
     import SiEPIC
     from SiEPIC import _globals
     from time import strftime
@@ -110,13 +118,18 @@ def spice_netlist_export(self, verbose=False, opt_in_selection_text=[]):
 pya.Cell.spice_netlist_export_ann = spice_netlist_export
 
 def main():
-  cell = pya.Application.instance().main_window().current_view().active_cellview().cell
-  text_subckt, text_main = cell.spice_netlist_export_ann(verbose=True)
-  cell.spice_netlist_export_ann()
-  print("***TEXT_SUBCKT***")
-  print(text_subckt)
-  print("***TEXT_MAIN***")
-  print(text_main)
+    '''
+    main function that prints the netlist for the active top cell
+    used for testing purposes
+    '''
+
+    cell = pya.Application.instance().main_window().current_view().active_cellview().cell
+    text_subckt, text_main = cell.spice_netlist_export_ann(verbose=True)
+    cell.spice_netlist_export_ann()
+    print("***TEXT_SUBCKT***")
+    print(text_subckt)
+    print("***TEXT_MAIN***")
+    print(text_main)
   
 if __name__ == "__main__":
     main()
