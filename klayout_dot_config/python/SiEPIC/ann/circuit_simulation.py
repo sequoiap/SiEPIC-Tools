@@ -8,6 +8,7 @@ from matplotlib.figure import Figure
 from SiEPIC.ann import getSparams as gs
 from SiEPIC.ann import NetlistDiagram
 from SiEPIC.ann.graphing.graph import Graph, DataSet, MenuItem
+import SiEPIC._globals as glob
 
 import numpy as np
 import os
@@ -180,7 +181,7 @@ class CircuitAnalysisGUI():
     def open_schematic(self, event):
         import subprocess, os, sys
         wd = os.getcwd()
-        temppath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp")
+        temppath = glob.TEMP_FOLDER
         os.chdir(temppath)
         filepath = "Schematic.png"
         if sys.platform.startswith('darwin'):
@@ -209,7 +210,7 @@ class CircuitAnalysisGUI():
     def generate_schematic(self):
         NetlistDiagram.run()
         wd = os.getcwd()
-        temppath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp")
+        temppath = glob.TEMP_FOLDER
         os.chdir(temppath)
         original = Image.open("Schematic.png")
         resized = original.resize((870, 895), Image.ANTIALIAS)

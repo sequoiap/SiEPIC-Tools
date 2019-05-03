@@ -1,6 +1,7 @@
 import subprocess
 import datetime
 import os
+import SiEPIC._globals as glob
 
 class Cell():
     def __init__(self, id, label):
@@ -71,10 +72,6 @@ class DiagramMaker():
     def __init__(self, cellList):
         self.cellList = cellList
         self.portList = []
-        # time = str(datetime.datetime.now())
-        # time = time.replace(' ','_')
-        # time = time.replace(':','.')
-        # self.filename = "diagram_" + time + ".diag"
 
     def connectPorts(self):
         devices = []
@@ -107,7 +104,7 @@ class DiagramMaker():
         from time import sleep
         import pygraphviz as pgv
         wd = os.getcwd()
-        temppath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp")
+        temppath = glob.TEMP_FOLDER
         os.chdir(temppath)
         G = pgv.AGraph(overlap='false', size="20,20", ratio='fill')
         for cell in self.cellList:
@@ -150,7 +147,7 @@ def demo():
     
 def getExternalPortList():
     wd = os.getcwd()
-    temppath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp")
+    temppath = glob.TEMP_FOLDER
     os.chdir(temppath)
     fname = 'singleComp0'
     netname = '_netlist' + fname + '.txt'
@@ -162,7 +159,7 @@ def getExternalPortList():
 
 def run():
     wd = os.getcwd()
-    temppath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp")
+    temppath = glob.TEMP_FOLDER
     os.chdir(temppath)
     fname = 'singleComp0'
     netname = '_netlist' + fname + '.txt'

@@ -5,13 +5,14 @@ import pya
 import os
 from SiEPIC.ann import export_netlist as en # import this!
 from SiEPIC.ann import cascade_netlist as cn # import this!
+import SiEPIC._globals as glob
 
 fname = 'singleComp0'
 netname = '_netlist' + fname + '.txt'
 matname = fname + '.mat'
 freqname = 'freq' + fname + '.mat'
 orig_cwd = os.getcwd()
-temp_cwd = os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp")
+temp_cwd = glob.TEMP_FOLDER
 
 def generateNetlist():
     # First, change the current working directory because we'll be saving files
