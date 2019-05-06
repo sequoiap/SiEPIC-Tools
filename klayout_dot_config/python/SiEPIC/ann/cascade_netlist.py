@@ -35,6 +35,8 @@ Both are used as global variables in the 'cascade_netlist' module
 path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "NN_SiO2_neff.h5")
 model = wn.loadWaveguideNN(path)
 
+numInterpPoints = 1000
+
 
 def strToSci(str):
     '''
@@ -178,7 +180,7 @@ class Cell():
         
         # s and f from the s-param file are interpolated to get a smooth curve
         # and also to match the frequency values for all components
-        self.f = np.linspace(1.88e+14, 1.99e+14, 1000)
+        self.f = np.linspace(1.88e+14, 1.99e+14, numInterpPoints)
         func = interp1d(f, s, kind='cubic', axis=0)
         self.s = func(self.f)            
 
@@ -360,7 +362,7 @@ class Parser:
         if not newCell.iswg:
             newCell.readSparamFile()
         else:
-            newCell.f = np.linspace(1.88e+14, 1.99e+14, 1000)
+            newCell.f = np.linspace(1.88e+14, 1.99e+14, numInterpPoints)
             newCell.wgSparamSiEIPC()
         self.cellList.append(newCell)
 
@@ -485,7 +487,7 @@ def main():
     '''
 
     cell = Cell(1)
-    cell.f = np.linspace(1.88e+14, 1.99e+14, 1000)
+    cell.f = np.linspace(1.88e+14, 1.99e+14, numInterpPoints)
     cell.wglen = 30e-6
     cell.wgSparamSiEIPC()
     print(np.power(abs(cell.s), 2))
