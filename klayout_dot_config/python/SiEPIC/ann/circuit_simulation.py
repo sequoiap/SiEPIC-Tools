@@ -66,14 +66,16 @@ class CircuitAnalysisGUI():
             self.plotFrequency = True
             lines = self.magnitude.get_lines()
             for line in lines.values():
-                x = line.objectID.get_xdata()
-                line.objectID.set_xdata(self.wavelengthToFrequency(x * CircuitAnalysisGUI.nano) / CircuitAnalysisGUI.tera)
+                x = line.x
+                line.x = self.wavelengthToFrequency(x / CircuitAnalysisGUI.nano) / CircuitAnalysisGUI.tera
+                line.objectID.set_xdata(line.x)
             self.magnitude.refresh()
             self.magnitude.xlabel('Frequency (THz)')
             lines = self.phase.get_lines()
             for line in lines.values():
-                x = line.objectID.get_xdata()
-                line.objectID.set_xdata(self.wavelengthToFrequency(x * CircuitAnalysisGUI.nano) / CircuitAnalysisGUI.tera)
+                x = line.x
+                line.x = self.wavelengthToFrequency(x / CircuitAnalysisGUI.nano) / CircuitAnalysisGUI.tera
+                line.objectID.set_xdata(line.x)
             self.phase.refresh()
             self.phase.xlabel('Frequency (THz)')
 
@@ -83,14 +85,16 @@ class CircuitAnalysisGUI():
             self.plotFrequency = False
             lines = self.magnitude.get_lines()
             for line in lines.values():
-                x = line.objectID.get_xdata()
-                line.objectID.set_xdata(self.frequencyToWavelength(x * CircuitAnalysisGUI.tera) * CircuitAnalysisGUI.nano)
+                x = line.x
+                line.x = self.frequencyToWavelength(x * CircuitAnalysisGUI.tera) * CircuitAnalysisGUI.nano
+                line.objectID.set_xdata(line.x)
             self.magnitude.refresh()
             self.magnitude.xlabel('Wavelength (nm)')
             lines = self.phase.get_lines()
             for line in lines.values():
-                x = line.objectID.get_xdata()
-                line.objectID.set_xdata(self.frequencyToWavelength(x * CircuitAnalysisGUI.tera) * CircuitAnalysisGUI.nano)
+                x = line.x
+                line.x = self.frequencyToWavelength(x * CircuitAnalysisGUI.tera) * CircuitAnalysisGUI.nano
+                line.objectID.set_xdata(line.x)
             self.phase.refresh()
             self.phase.xlabel('Wavelength (nm)')
 
