@@ -6,6 +6,3 @@ TensorFlow
 Keras
 pygraphviz
 Pillow
-
-# If we decide to use graphviz and pygraphviz for generating schematics
-# 
