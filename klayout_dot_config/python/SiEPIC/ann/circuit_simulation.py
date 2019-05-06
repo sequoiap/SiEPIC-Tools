@@ -37,7 +37,7 @@ class CircuitAnalysisGUI():
         self.parent.withdraw()
         # Set the window title and size
         self.parent.title('Circuit Simulation')
-        w = 1200 # width for the Tk root
+        w = 900 # width for the Tk root
         h = 900 # height for the Tk root
         # get screen width and height
         ws = self.parent.winfo_screenwidth() # width of the screen
@@ -100,17 +100,14 @@ class CircuitAnalysisGUI():
 
     def init_figures(self):
         # Schematic figure initialization
-        self.schematic_height = 920
-        self.schematic_width = 895
+        self.schematic_height = 900
+        self.schematic_width = 900
         self.schematic = tk.Frame(self.parent, height=self.schematic_height, width=self.schematic_width)#, relief="ridge", bd=5)
-        self.schematic.grid(row=0, column=0, rowspan=3)
-
-        self.open_magnitude()
-        self.open_phase()
+        self.schematic.grid(row=1, column=0, rowspan=3)
         
         # Port selection menu
         self.controls = tk.Frame(self.parent, width=700, height=30, bd=1)
-        self.controls.grid(row=0, column=1)
+        self.controls.grid(row=0, column=0)
 
     def additional_menus(self):
         functions = [MenuItem("Plot by frequency", self.plotByFrequency), MenuItem("Plot by wavelength", self.plotByWavelength)]
@@ -122,6 +119,12 @@ class CircuitAnalysisGUI():
 
     def open_phase(self):
         self.phase = Graph(self.parent, "Phase", additional_menus=self.additional_menus())
+
+    def open_layout(self):
+        import SiEPIC.ann.layout.schematic as schem
+        _, comp = NetlistDiagram.getExternalPortList()
+        fig = schem.SchematicDrawer(self.parent, comp)
+        fig.draw()
 
     def set_controls(self):
         options, _ = NetlistDiagram.getExternalPortList()
@@ -135,15 +138,17 @@ class CircuitAnalysisGUI():
         thing2.config(width=20)
         thing2.grid(row=0, column=1)#.pack(side=tk.LEFT)
         # thing3 = 
-        tk.Label(self.controls, text=" to: ").grid(row=1, column=0)#.pack(side=tk.LEFT)
+        tk.Label(self.controls, text=" to: ").grid(row=0, column=2)#.pack(side=tk.LEFT)
         thing4 = tk.OptionMenu(self.controls, self.second, *options, command=self.selection_changed)
         thing4.config(width=20)
-        thing4.grid(row=1, column=1)#.pack(side=tk.LEFT)
+        thing4.grid(row=0, column=3)#.pack(side=tk.LEFT)
         #gobtn = tk.Button(self.controls, text="GO").grid(row=0, column=4)#.pack(side=tk.LEFT) #command=func)
         openMagnitude = tk.Button(self.controls, text="Magnitude", command=self.open_magnitude)
-        openMagnitude.grid(row=2, column=0)
+        openMagnitude.grid(row=0, column=4)
         openPhase = tk.Button(self.controls, text="Phase", command=self.open_phase)
-        openPhase.grid(row=2, column=1)
+        openPhase.grid(row=0, column=5)
+        openLayout = tk.Button(self.controls, text="Layout", command=self.open_layout)
+        openLayout.grid(row=0, column=6)
 
     def frequencyToWavelength(self, frequencies):
         c = 299792458
@@ -224,11 +229,6 @@ class CircuitAnalysisGUI():
         label.bind("<Button-1>", self.open_schematic)
         label.pack()
         os.chdir(wd)
-
-        import SiEPIC.ann.layout.schematic as schem
-        _, comp = NetlistDiagram.getExternalPortList()
-        fig = schem.SchematicDrawer(self.parent, comp)
-        fig.draw()
 
     
     def _quit(self):
