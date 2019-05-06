@@ -213,7 +213,7 @@ class Cell():
 
         #the s-matrix is built from K and the waveguide length
         for x in range(0, len(neff)): 
-          mat[x,0,1] = mat[x,1,0] = cm.exp(-K[x] * complex(self.wglen))
+          mat[x,0,1] = mat[x,1,0] = cm.exp(K[x] * complex(self.wglen))
         self.s = mat
         
 
@@ -237,7 +237,11 @@ class Cell():
         mat = np.zeros((len(self.f),2,2), dtype=complex) #initialize array to hold s-params
         
         c0 = 299792458 #m/s
-        
+
+        #loss calculation
+        TE_loss = 700 #dB/m
+        alpha = TE_loss/(20*m.log10(np.exp(1)))  
+
         w = np.asarray(self.f) * 2 * m.pi #get angular frequency from frequency
         lam0 = float(coeffs[0]) #center wavelength
         w0 = (2*m.pi*c0) / lam0 #center frequency (angular)
@@ -250,9 +254,9 @@ class Cell():
         K = 2*m.pi*ne/lam0 + (ng/c0)*(w - w0) - (nd*lam0**2/(4*m.pi*c0))*((w - w0)**2)
         
         for x in range(0, len(self.f)): #build s-matrix from K and waveguide length
-          mat[x,0,1] = mat[x,1,0] = cm.exp(K[x] * complex(self.wglen) * 1j)
+          mat[x,0,1] = mat[x,1,0] = np.exp(-alpha*self.wglen + (K[x]*self.wglen*1j))
         
-        self.s = mat       
+        self.s = mat
 
 
     def printPorts(self):
@@ -482,9 +486,9 @@ def main():
 
     cell = Cell(1)
     cell.f = np.linspace(1.88e+14, 1.99e+14, 1000)
-    cell.wglen = 50e-6
+    cell.wglen = 30e-6
     cell.wgSparamSiEIPC()
-    print(cell.s)
+    print(np.power(abs(cell.s), 2))
   
 if __name__ == "__main__":
     main()
