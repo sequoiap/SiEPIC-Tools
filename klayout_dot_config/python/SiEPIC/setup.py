@@ -57,13 +57,21 @@ def registerMenuItems():
     ACTIONS[count].on_triggered(lumerical.interconnect.circuit_simulation)
     ACTIONS[count].icon = path
     count += 1
+
+    if not(menu.is_menu("@toolbar.cir_sim_ann")):
+        ACTIONS.append(pya.Action())
+        menu.insert_item("@toolbar.end", "cir_sim_ann", ACTIONS[count])
+    ACTIONS[count].title = "ANN\nSimulation"
+    ACTIONS[count].on_triggered(SiEPIC.ann.circuit_simulation.circuit_analysis)
+    ACTIONS[count].icon = path
+    count += 1
     
     if 0:
         if not(menu.is_menu("@toolbar.cir_sim.mc_sim")):
             ACTIONS.append(pya.Action())
             menu.insert_item("@toolbar.cir_sim.end", "mc_sim", ACTIONS[count])
         ACTIONS[count].title = "INTERCONNECT Monte Carlo Simulations"
-        ACTIONS[count].on_triggered(lumerical.interconnect.circuit_simulation_monte_carlo)
+        ACTIONS[count].on_triggered(ann.circuit_simulation.circuit_analysis)
         ACTIONS[count].icon = path
         count += 1
     
