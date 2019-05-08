@@ -2,9 +2,9 @@ import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk
 
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
-from matplotlib.backend_bases import key_press_handler
-from matplotlib.figure import Figure
+# from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+# from matplotlib.backend_bases import key_press_handler
+# from matplotlib.figure import Figure
 
 from SiEPIC.ann import getSparams as gs
 from SiEPIC.ann import NetlistDiagram
@@ -189,6 +189,8 @@ class CircuitAnalysisGUI():
             self.magnitude = Graph(self.parent, "Magnitude", additional_menus=self.additional_menus(), onCloseCallback=self._magnitude_closed)
             self.magnitude.ylabel(r'$|A| ^2$')
             self.magnitude.title('Magnitude-Squared')
+        else:
+            self.magnitude.raise_window()
 
     def _magnitude_closed(self):
         self.magnitude = None
@@ -198,6 +200,8 @@ class CircuitAnalysisGUI():
             self.phase = Graph(self.parent, "Phase", additional_menus=self.additional_menus(), onCloseCallback=self._phase_closed)
             self.phase.ylabel('Phase (rad)')
             self.phase.title('Phase')
+        else:
+            self.phase.raise_window()
 
     def _phase_closed(self):
         self.phase = None
