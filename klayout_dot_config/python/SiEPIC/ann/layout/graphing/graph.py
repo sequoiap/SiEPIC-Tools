@@ -170,6 +170,10 @@ class Graph:
         self.lines = {}
         self.line_counter = 1
 
+    def raise_window(self):
+        self.master.attributes('-topmost', True)
+        self.master.attributes('-topmost', False)
+
     def on_closing(self):
         if self.onCloseCallback is not None:
             self.onCloseCallback()
