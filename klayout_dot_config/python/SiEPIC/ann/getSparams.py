@@ -27,9 +27,10 @@ def generateNetlist():
     fid.write(text_subckt)
     fid.close()
 
-def getSparams( width, thickness, regenerate_netlist=True):
-    if regenerate_netlist:
-        generateNetlist()
+
+def getSparams( width, thickness):
+    generateNetlist()
+
     # Get sparams and freq array from netlist
     s, f = cn.Params.get_sparameters(netname, width, thickness) 
     # Change the working directory back to what it was originally, 

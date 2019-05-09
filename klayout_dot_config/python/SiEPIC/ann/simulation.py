@@ -10,10 +10,14 @@ class MathPrefixes:
     c = 299792458
 
 class Simulation:
-    def __init__(self, s, f, p):
-        self.s_matrix = s
-        self.frequency = f
-        self.ports = p
+    def __init__(self):
+        # parameters for generating waveguide s parameters
+        waveguideWidth = 0.5
+        waveguideThickness = 0.22
+        # Get s parameters and frequencies (generates the netlist, too).
+        self.s_matrix, self.frequency = gs.getSparams(waveguideWidth, waveguideThickness, regenerate_netlist=True)
+        self.ports = gs.getPorts(waveguideWidth, waveguideThickness)
+
         self.external_port_list, self.external_components = NetlistDiagram.getExternalPortList()
         self._rearrangeSMatrix()
         return
@@ -65,3 +69,4 @@ class Simulation:
 
     def exportSMatrix(self):
         return self.s_matrix, self.frequency
+

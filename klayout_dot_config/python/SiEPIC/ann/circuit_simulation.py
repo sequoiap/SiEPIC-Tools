@@ -56,21 +56,15 @@ class CircuitAnalysisGUI():
         # Initialize the menu and figures
         self.create_menu()
         self.init_figures()
-        # parameters for generating waveguide s parameters
-        waveguideWidth = 0.5
-        waveguideThickness = 0.22
-        # Get s parameters and frequencies (generates the netlist, too).
-        self.s, self.f = gs.getSparams(waveguideWidth, waveguideThickness, regenerate_netlist=True)
-        self.ports = gs.getPorts(waveguideWidth, waveguideThickness)
 
-        self.simulation = Simulation(self.s, self.f, self.ports)
+        self.simulation = Simulation()
+
         self.plotFrequency = True
 
         # Update magnitude and phase generates the netlist, and therefore
         # need to be placed before generate_schematic
         self.set_controls()
         self.generate_schematic()
-        
 
         # Now that everything is in place, show the window.
         self.parent.after(0, self.parent.deiconify)
@@ -150,6 +144,7 @@ class CircuitAnalysisGUI():
         if filename:
             s_mat, freq = self.simulation.exportSMatrix()
             sio.savemat(filename, {'s_mat' : s_mat, 'freq' : freq})
+
         
     def plotByFrequency(self):
         if not self.plotFrequency:
