@@ -11,8 +11,13 @@ class MathPrefixes:
 
 class Simulation:
     def __init__(self):
-        self.s_matrix, self.frequency = gs.getSparams()
-        self.ports = gs.getPorts()
+        # parameters for generating waveguide s parameters
+        waveguideWidth = 0.5
+        waveguideThickness = 0.22
+        # Get s parameters and frequencies (generates the netlist, too).
+        self.s_matrix, self.frequency = gs.getSparams(waveguideWidth, waveguideThickness)
+        self.ports = gs.getPorts(waveguideWidth, waveguideThickness)
+
         self.external_port_list, self.external_components = NetlistDiagram.getExternalPortList()
         self._rearrangeSMatrix()
         return
@@ -63,4 +68,5 @@ class Simulation:
         return wl, phase
 
     def exportSMatrix(self):
-        return self.s_matrix
+        return self.s_matrix, self.frequency
+

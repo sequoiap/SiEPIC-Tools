@@ -124,12 +124,12 @@ def main():
     '''
 
     cell = pya.Application.instance().main_window().current_view().active_cellview().cell
-    text_subckt, text_main = cell.spice_netlist_export_ann(verbose=True)
+    text_subckt, text_main = cell.spice_netlist_export_ann(verbose=False)
     cell.spice_netlist_export_ann()
-    print("***TEXT_SUBCKT***")
-    print(text_subckt)
-    print("***TEXT_MAIN***")
-    print(text_main)
+    #print("***TEXT_SUBCKT***")
+    #print(text_subckt)
+    #print("***TEXT_MAIN***")
+    #print(text_main)
   
 if __name__ == "__main__":
     main()

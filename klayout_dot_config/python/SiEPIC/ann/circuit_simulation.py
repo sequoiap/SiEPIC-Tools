@@ -58,12 +58,14 @@ class CircuitAnalysisGUI():
         self.init_figures()
 
         self.simulation = Simulation()
+
         self.plotFrequency = True
 
         # Update magnitude and phase generates the netlist, and therefore
         # need to be placed before generate_schematic
         self.set_controls()
         self.generate_schematic()
+
         # Now that everything is in place, show the window.
         self.parent.after(0, self.parent.deiconify)
 
@@ -140,7 +142,9 @@ class CircuitAnalysisGUI():
         options['parent'] = self.parent
         filename = filedialog.asksaveasfilename(**options)
         if filename:
-            sio.savemat(filename, {'s_mat' : self.simulation.exportSMatrix()})
+            s_mat, freq = self.simulation.exportSMatrix()
+            sio.savemat(filename, {'s_mat' : s_mat, 'freq' : freq})
+
         
     def plotByFrequency(self):
         if not self.plotFrequency:

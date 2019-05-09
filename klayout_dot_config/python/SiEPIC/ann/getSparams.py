@@ -20,30 +20,32 @@ def generateNetlist():
     # Get the current topcell from Klayout
     cell = pya.Application.instance().main_window().current_view().active_cellview().cell
     # Get the netlist from the cell
-    text_subckt, text_main = cell.spice_netlist_export_ann(verbose=True)
+    text_subckt, text_main = cell.spice_netlist_export_ann(verbose=False)
     #print(dir(cell))
     # Write the netlist to a temporary file
     fid = open(netname, 'w')
     fid.write(text_subckt)
     fid.close()
 
-def getSparams():
+
+def getSparams( width, thickness):
     generateNetlist()
+
     # Get sparams and freq array from netlist
-    s, f = cn.Params.get_sparameters(netname) 
+    s, f = cn.Params.get_sparameters(netname, width, thickness) 
     # Change the working directory back to what it was originally, 
     # out of politeness and an abundance of caution
     os.chdir(orig_cwd)
     # Return the sparameters and the frequency array
     return s, f
     
-def getPorts():
+def getPorts(width, thickness):
     # First, change the current working directory because we'll be saving files
     os.chdir(temp_cwd)
     # Get the current topcell from Klayout
     cell = pya.Application.instance().main_window().current_view().active_cellview().cell
     # Get port list
-    p = cell.Params.get_ports(netname) 
+    p = cell.Params.get_ports(netname, width, thickness) 
     # Change the working directory back to what it was originally, 
     # out of politeness and an abundance of caution
     os.chdir(orig_cwd)
