@@ -15,7 +15,7 @@ class Simulation:
         waveguideWidth = 0.5
         waveguideThickness = 0.22
         # Get s parameters and frequencies (generates the netlist, too).
-        self.s_matrix, self.frequency = gs.getSparams(waveguideWidth, waveguideThickness, regenerate_netlist=True)
+        self.s_matrix, self.frequency = gs.getSparams(waveguideWidth, waveguideThickness)
         self.ports = gs.getPorts(waveguideWidth, waveguideThickness)
 
         self.external_port_list, self.external_components = NetlistDiagram.getExternalPortList()
