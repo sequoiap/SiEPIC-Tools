@@ -50,14 +50,17 @@ class CircuitAnalysisGUI():
         # Initialize the menu and figures
         self.create_menu()
         self.init_figures()
+        # parameters for generating waveguide s parameters
+        waveguideWidth = 0.5
+        waveguideThickness = 0.22
         # Get s parameters and frequencies (generates the netlist, too).
-        self.s, self.f = gs.getSparams(regenerate_netlist=True)
+        self.s, self.f = gs.getSparams(waveguideWidth, waveguideThickness, regenerate_netlist=True)
         self.plotFrequency = True
         # Update magnitude and phase generates the netlist, and therefore
         # need to be placed before generate_schematic
         self.set_controls()
         self.generate_schematic()
-        self.ports = gs.getPorts()
+        self.ports = gs.getPorts(waveguideWidth, waveguideThickness)
         # Now that everything is in place, show the window.
         self.parent.after(0, self.parent.deiconify)
         
