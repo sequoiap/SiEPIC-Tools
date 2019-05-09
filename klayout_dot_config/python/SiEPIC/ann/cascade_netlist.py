@@ -1,17 +1,15 @@
-import subprocess
-import datetime
+# import subprocess
+# import datetime
 import os
-import sys
+# import sys
+
 import numpy as np
 import matplotlib.pyplot as plt
-import math as m
-import cmath as cm
+
 import pya
 from SiEPIC.ann import qopticParser1 as qp
 from enum import Enum
 import skrf as rf
-import scipy.io as sio
-from scipy import signal as sig
 from SiEPIC.ann import waveguideNN as wn
 from scipy.interpolate import splev, splrep, interp1d
 
@@ -203,7 +201,7 @@ class Cell():
         thickness = thickness_in #0.22 #um
         mode = 0 #TE
         TE_loss = 700 #dB/m for width 500nm
-        alpha = TE_loss/(20*m.log10(np.exp(1))) #assuming lossless waveguide
+        alpha = TE_loss/(20*np.log10(np.exp(1))) #assuming lossless waveguide
         
         #calculate wavelength
         wl = np.true_divide(c0,self.f)
@@ -212,11 +210,11 @@ class Cell():
         neff = wn.getWaveguideIndex(model,np.transpose(wl),width,thickness,mode)
 
         #K is calculated from the effective index and wavelength
-        K = (2*m.pi*np.true_divide(neff,wl))
+        K = (2*np.pi*np.true_divide(neff,wl))
 
         #the s-matrix is built from alpha, K, and the waveguide length
         for x in range(0, len(neff)): 
-          mat[x,0,1] = mat[x,1,0] = cm.exp(-alpha*self.wglen + (K[x]*self.wglen*1j))
+            mat[x,0,1] = mat[x,1,0] = np.exp(-alpha*self.wglen + (K[x]*self.wglen*1j))
         self.s = mat
         
 
@@ -243,18 +241,18 @@ class Cell():
 
         #loss calculation
         TE_loss = 700 #dB/m for width 500nm
-        alpha = TE_loss/(20*m.log10(np.exp(1)))  
+        alpha = TE_loss/(20*np.log10(np.exp(1)))  
 
-        w = np.asarray(self.f) * 2 * m.pi #get angular frequency from frequency
+        w = np.asarray(self.f) * 2 * np.pi #get angular frequency from frequency
         lam0 = float(coeffs[0]) #center wavelength
-        w0 = (2*m.pi*c0) / lam0 #center frequency (angular)
+        w0 = (2*np.pi*c0) / lam0 #center frequency (angular)
         
         ne = float(coeffs[1]) #effective index
         ng = float(coeffs[3]) #group index
         nd = float(coeffs[5]) #group dispersion
         
         #calculation of K
-        K = 2*m.pi*ne/lam0 + (ng/c0)*(w - w0) - (nd*lam0**2/(4*m.pi*c0))*((w - w0)**2)
+        K = 2*np.pi*ne/lam0 + (ng/c0)*(w - w0) - (nd*lam0**2/(4*np.pi*c0))*((w - w0)**2)
         
         for x in range(0, len(self.f)): #build s-matrix from K and waveguide length
           mat[x,0,1] = mat[x,1,0] = np.exp(-alpha*self.wglen + (K[x]*self.wglen*1j))

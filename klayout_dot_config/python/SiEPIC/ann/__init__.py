@@ -1,5 +1,5 @@
 # Alec Hammond's ANN Python integration
 
-from . import qopticParser1, loadNN, export_netlist, waveguideNN, getSparams, NetlistDiagram, circuit_simulation, layout, simulation
+from . import qopticParser1, loadNN, export_netlist, waveguideNN, getSparams, NetlistDiagram, circuit_simulation, layout, simulation, model
 
 print('ANN Python integration (CamachoLab)')
