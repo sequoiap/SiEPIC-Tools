@@ -35,7 +35,7 @@ Both are used as global variables in the 'cascade_netlist' module
 path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "NN_SiO2_neff.h5")
 model = wn.loadWaveguideNN(path)
 
-numInterpPoints = 1000
+numInterpPoints = 2000
 
 
 def strToSci(str):
@@ -185,7 +185,7 @@ class Cell():
         self.s = func(self.f)            
 
 
-    def wgSparam(self):
+    def wgSparam(self, width_in, thickness_in):
         '''
         Function that calculates the s-parameters for a waveguide using the ANN model
         Args:
@@ -199,10 +199,11 @@ class Cell():
         mat = np.zeros((len(self.f),2,2), dtype=complex)        
         
         c0 = 299792458 #m/s
-        width = 0.5 #um
-        thickness = 0.22 #um
+        width = width_in #0.5 #um
+        thickness = thickness_in #0.22 #um
         mode = 0 #TE
-        alpha = 0 #assuming lossless waveguide
+        TE_loss = 700 #dB/m for width 500nm
+        alpha = TE_loss/(20*m.log10(np.exp(1))) #assuming lossless waveguide
         
         #calculate wavelength
         wl = np.true_divide(c0,self.f)
@@ -211,11 +212,11 @@ class Cell():
         neff = wn.getWaveguideIndex(model,np.transpose(wl),width,thickness,mode)
 
         #K is calculated from the effective index and wavelength
-        K = alpha + (2*m.pi*np.true_divide(neff,wl))*1j
+        K = (2*m.pi*np.true_divide(neff,wl))
 
-        #the s-matrix is built from K and the waveguide length
+        #the s-matrix is built from alpha, K, and the waveguide length
         for x in range(0, len(neff)): 
-          mat[x,0,1] = mat[x,1,0] = cm.exp(K[x] * complex(self.wglen))
+          mat[x,0,1] = mat[x,1,0] = cm.exp(-alpha*self.wglen + (K[x]*self.wglen*1j))
         self.s = mat
         
 
@@ -241,7 +242,7 @@ class Cell():
         c0 = 299792458 #m/s
 
         #loss calculation
-        TE_loss = 700 #dB/m
+        TE_loss = 700 #dB/m for width 500nm
         alpha = TE_loss/(20*m.log10(np.exp(1)))  
 
         w = np.asarray(self.f) * 2 * m.pi #get angular frequency from frequency
@@ -296,7 +297,7 @@ class Parser:
         self.nports = 0
 
 
-    def parseFile(self):
+    def parseFile(self, width, thickness):
         '''
         reads the netlist file and calls 'parseCell' to create Cell objects from 
         the netlist entries
@@ -318,10 +319,10 @@ class Parser:
                 elif ("." in elements[0]) or ("*" in elements[0]):
                     continue
                 else:
-                    self.parseCell(elements)
+                    self.parseCell(elements, width, thickness)
         
 
-    def parseCell(self, line):
+    def parseCell(self, line, width, thickness):
         '''
         This function takes an entry from the netlist and creates a new Cell object
         corresponding to the entry
@@ -363,7 +364,7 @@ class Parser:
             newCell.readSparamFile()
         else:
             newCell.f = np.linspace(1.88e+14, 1.99e+14, numInterpPoints)
-            newCell.wgSparamSiEIPC()
+            newCell.wgSparam(width, thickness)
         self.cellList.append(newCell)
 
 
@@ -442,7 +443,7 @@ class Params:
     results
     '''
 
-    def get_sparameters(filename):
+    def get_sparameters(filename, width, thickness):
         '''
         function to get the cascaded s-matrix of the photonic circuit 
         represented by the current top-cell in Klayout
@@ -455,14 +456,14 @@ class Params:
         '''
 
         test = Parser(filename)
-        test.parseFile()
+        test.parseFile(width, thickness)
         test.cascadeCells()
         mat = test.cellList[0].s
         freq = test.cellList[0].f
         return (mat, freq)
         
 
-    def get_ports(filename):
+    def get_ports(filename, width, thickness):
         '''
         function to get the ports of the cascaded photonic circuit
         Takes a filename of a netlist
@@ -472,7 +473,7 @@ class Params:
             ports (list): ordering of the external ports of the circuit
         '''
         test = Parser(filename)
-        test.parseFile()
+        test.parseFile(width, thickness)
         test.cascadeCells()
         ports = test.cellList[0].p
         return ports
