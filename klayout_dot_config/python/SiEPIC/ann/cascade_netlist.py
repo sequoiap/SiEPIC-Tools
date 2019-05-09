@@ -201,7 +201,7 @@ class Cell():
         thickness = thickness_in #0.22 #um
         mode = 0 #TE
         TE_loss = 700 #dB/m for width 500nm
-        alpha = TE_loss/(20*m.log10(np.exp(1))) #assuming lossless waveguide
+        alpha = TE_loss/(20*np.log10(np.exp(1))) #assuming lossless waveguide
         
         #calculate wavelength
         wl = np.true_divide(c0,self.f)

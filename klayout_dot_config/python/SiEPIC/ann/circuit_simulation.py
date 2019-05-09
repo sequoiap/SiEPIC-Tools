@@ -78,7 +78,7 @@ class CircuitAnalysisGUI():
         # filemenu.add_command(label="Open")
         # filemenu.add_command(label="Save")
         # filemenu.add_command(label="Enlarge Schematic", command=self.open_schematic)
-        filemenu.add_command(label="Export s-matrix to .mat", command=self.export_s_matrix_mat)
+        filemenu.add_command(label="Export s-matrix", command=self.export_s_matrix)
         filemenu.add_command(label="Exit", command=self.parent.on_closing)
         menubar.add_cascade(label="File", menu=filemenu)
         
@@ -134,17 +134,20 @@ class CircuitAnalysisGUI():
         label.pack()
         os.chdir(wd)
 
-    def export_s_matrix_mat(self):
-        fileTypes = [("MATLAB file","*.mat")]
+    def export_s_matrix(self, ext=0):
+        fileTypes = [("MATLAB file","*.mat"), ("NumPy file","*.npz")]
         options = {}
         options['initialdir'] = os.path.expanduser('~')
         options['filetypes'] = fileTypes
         options['parent'] = self.parent
         filename = filedialog.asksaveasfilename(**options)
         if filename:
+            _, ext = os.path.splitext(filename)
             s_mat, freq = self.simulation.exportSMatrix()
-            sio.savemat(filename, {'s_mat' : s_mat, 'freq' : freq})
-
+            if ext == ".mat":
+                sio.savemat(filename, {'s_mat' : s_mat, 'freq' : freq})
+            elif ext == ".npz":
+                np.savez(filename, s_mat, freq)
         
     def plotByFrequency(self):
         if not self.plotFrequency:
