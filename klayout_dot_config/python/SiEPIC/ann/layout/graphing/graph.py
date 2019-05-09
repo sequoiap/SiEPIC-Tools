@@ -127,10 +127,11 @@ class Graph:
     #                                                                       #
     #########################################################################
 
-    def __init__(self, parent: tk.Toplevel, window_title=None, additional_menus=None):
+    def __init__(self, parent: tk.Toplevel, window_title=None, additional_menus=None, onCloseCallback=None):
         # The master tk object
         self.parent = parent
         self.master = tk.Toplevel(parent)
+        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
         # self.master = parent
         if window_title == None:
             self.master.title(Graph.default_title)
@@ -153,6 +154,7 @@ class Graph:
         self.reset()
         self.init_menu(additional_menus=additional_menus)
         self.master.config(menu=self.menubar)
+        self.onCloseCallback = onCloseCallback
 
     def reset(self):
         """Clears the figure, adds a new axis, resets the title, and clears all stored DataSet lines."""
@@ -167,6 +169,11 @@ class Graph:
         # first line in the list that matches the name.
         self.lines = {}
         self.line_counter = 1
+
+    def on_closing(self):
+        if self.onCloseCallback is not None:
+            self.onCloseCallback()
+        self.master.destroy()
 
     #########################################################################
     #                                                                       #
@@ -304,7 +311,7 @@ class Graph:
     def filemenu_Close(self):
         """Destroys the child tkinter object upon closing."""
 
-        self.master.destroy()
+        self.on_closing()
 
     #########################################################################
     #                                                                       #
