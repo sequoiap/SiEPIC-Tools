@@ -18,7 +18,7 @@ start = time.time()
 dispTime = True
 
 # number of MC simulations to run
-num_sims = 1000
+num_sims = 100
 
 # mean and standard deviation for width
 mu_width = 0.5
@@ -32,19 +32,25 @@ sigma_thickness = 0.002
 # random distribution for thickness
 random_thickness = np.random.normal(mu_thickness, sigma_thickness, num_sims)
 
+# mean and standard deviation for length
+mu_length = 0
+sigma_length = 0.01
+# random distribution for length change
+random_deltaLength = np.random.normal(mu_length, sigma_length, num_sims)
+
 # run simulation with mean width and thickness
-mean_s, frequency = gs.getSparams(mu_width, mu_thickness)
+mean_s, frequency = gs.getSparams(mu_width, mu_thickness, 0)
 results_shape = np.append(np.asarray([num_sims]), mean_s.shape)
 results = np.zeros([dim for dim in results_shape], dtype='complex128')
 
 # run simulations with varied width and thickness
 for sim in range(num_sims):
-    results[sim, :, :, :] = gs.getSparams(random_width[sim], random_thickness[sim])[0]
+    results[sim, :, :, :] = gs.getSparams(random_width[sim], random_thickness[sim], random_deltaLength[sim])[0]
     if (sim % 10) == 0:
         print(sim)
 
 # rearrange matrix so matrix indices line up with proper port numbers
-p = gs.getPorts(random_width[0], random_thickness[0])
+p = gs.getPorts(random_width[0], random_thickness[0], 0)
 p = [int(i) for i in p]
 rp = copy.deepcopy(p)
 rp.sort(reverse=True)

@@ -183,7 +183,7 @@ class Cell():
         self.s = func(self.f)            
 
 
-    def wgSparam(self, width_in, thickness_in):
+    def wgSparam(self, width_in, thickness_in, deltaLength_in):
         '''
         Function that calculates the s-parameters for a waveguide using the ANN model
         Args:
@@ -202,6 +202,7 @@ class Cell():
         mode = 0 #TE
         TE_loss = 700 #dB/m for width 500nm
         alpha = TE_loss/(20*np.log10(np.exp(1))) #assuming lossless waveguide
+        waveguideLength = self.wglen + (self.wglen * deltaLength_in)
         
         #calculate wavelength
         wl = np.true_divide(c0,self.f)
@@ -214,7 +215,7 @@ class Cell():
 
         #the s-matrix is built from alpha, K, and the waveguide length
         for x in range(0, len(neff)): 
-            mat[x,0,1] = mat[x,1,0] = np.exp(-alpha*self.wglen + (K[x]*self.wglen*1j))
+            mat[x,0,1] = mat[x,1,0] = np.exp(-alpha*waveguideLength + (K[x]*waveguideLength*1j))
         self.s = mat
         
 
@@ -295,7 +296,7 @@ class Parser:
         self.nports = 0
 
 
-    def parseFile(self, width, thickness):
+    def parseFile(self, width, thickness, deltaLength):
         '''
         reads the netlist file and calls 'parseCell' to create Cell objects from 
         the netlist entries
@@ -317,10 +318,10 @@ class Parser:
                 elif ("." in elements[0]) or ("*" in elements[0]):
                     continue
                 else:
-                    self.parseCell(elements, width, thickness)
+                    self.parseCell(elements, width, thickness, deltaLength)
         
 
-    def parseCell(self, line, width, thickness):
+    def parseCell(self, line, width, thickness, deltaLength):
         '''
         This function takes an entry from the netlist and creates a new Cell object
         corresponding to the entry
@@ -362,7 +363,7 @@ class Parser:
             newCell.readSparamFile()
         else:
             newCell.f = np.linspace(1.88e+14, 1.99e+14, numInterpPoints)
-            newCell.wgSparam(width, thickness)
+            newCell.wgSparam(width, thickness, deltaLength)
         self.cellList.append(newCell)
 
 
@@ -441,7 +442,7 @@ class Params:
     results
     '''
 
-    def get_sparameters(filename, width, thickness):
+    def get_sparameters(filename, width, thickness, deltaLength):
         '''
         function to get the cascaded s-matrix of the photonic circuit 
         represented by the current top-cell in Klayout
@@ -454,14 +455,14 @@ class Params:
         '''
 
         test = Parser(filename)
-        test.parseFile(width, thickness)
+        test.parseFile(width, thickness, deltaLength)
         test.cascadeCells()
         mat = test.cellList[0].s
         freq = test.cellList[0].f
         return (mat, freq)
         
 
-    def get_ports(filename, width, thickness):
+    def get_ports(filename, width, thickness, deltaLength):
         '''
         function to get the ports of the cascaded photonic circuit
         Takes a filename of a netlist
@@ -471,7 +472,7 @@ class Params:
             ports (list): ordering of the external ports of the circuit
         '''
         test = Parser(filename)
-        test.parseFile(width, thickness)
+        test.parseFile(width, thickness, deltaLength)
         test.cascadeCells()
         ports = test.cellList[0].p
         return ports
