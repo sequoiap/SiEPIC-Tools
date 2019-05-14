@@ -1,7 +1,7 @@
 # import subprocess
 # import datetime
 import os
-# import sys
+import sys
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -34,6 +34,9 @@ path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "NN_SiO2_neff.h
 model = wn.loadWaveguideNN(path)
 
 numInterpPoints = 2000
+
+interpRange = (1.88e+14, 1.99e+14)
+#interpRange = (1.93e+14, 1.99e+14)
 
 
 def strToSci(str):
@@ -178,7 +181,7 @@ class Cell():
         
         # s and f from the s-param file are interpolated to get a smooth curve
         # and also to match the frequency values for all components
-        self.f = np.linspace(1.88e+14, 1.99e+14, numInterpPoints)
+        self.f = np.linspace(interpRange[0], interpRange[1], numInterpPoints)
         func = interp1d(f, s, kind='cubic', axis=0)
         self.s = func(self.f)            
 
@@ -362,7 +365,7 @@ class Parser:
         if not newCell.iswg:
             newCell.readSparamFile()
         else:
-            newCell.f = np.linspace(1.88e+14, 1.99e+14, numInterpPoints)
+            newCell.f = np.linspace(interpRange[0], interpRange[1], numInterpPoints)
             newCell.wgSparam(width, thickness, deltaLength)
         self.cellList.append(newCell)
 
@@ -487,7 +490,7 @@ def main():
     '''
 
     cell = Cell(1)
-    cell.f = np.linspace(1.88e+14, 1.99e+14, numInterpPoints)
+    cell.f = np.linspace(interpRange[0], interpRange[1], numInterpPoints)
     cell.wglen = 30e-6
     cell.wgSparamSiEIPC()
     print(np.power(abs(cell.s), 2))
