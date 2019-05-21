@@ -223,7 +223,7 @@ class Cell():
         
 
     #calculate waveguide s-parameters based on SiEPIC's compact model
-    def wgSparamSiEIPC(self):
+    def wgSparamSiEPIC(self):
         '''
         Calculates waveguide s-parameters based on the SiEPIC compact model for waveguides
         Args:
@@ -366,7 +366,8 @@ class Parser:
             newCell.readSparamFile()
         else:
             newCell.f = np.linspace(interpRange[0], interpRange[1], numInterpPoints)
-            newCell.wgSparam(width, thickness, deltaLength)
+            # newCell.wgSparam(width, thickness, deltaLength)
+            newCell.wgSparamSiEPIC()
         self.cellList.append(newCell)
 
 
@@ -492,7 +493,7 @@ def main():
     cell = Cell(1)
     cell.f = np.linspace(interpRange[0], interpRange[1], numInterpPoints)
     cell.wglen = 30e-6
-    cell.wgSparamSiEIPC()
+    cell.wgSparamSiEPIC()
     print(np.power(abs(cell.s), 2))
   
 if __name__ == "__main__":
