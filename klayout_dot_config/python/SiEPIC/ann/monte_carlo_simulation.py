@@ -183,6 +183,7 @@ def run_monte_carlo_sim(num_sims=DEF_NUM_SIMS, mu_width=DEF_MU_WIDTH, sigma_widt
     p = [int(i) for i in p]
     rp = copy.deepcopy(p)
     rp.sort(reverse=True)
+    # TODO: Remove this duplicate code. It's been implemented once in the Simulation.py class
     concatinate_order = [p.index(i) for i in rp]
     temp_res = copy.deepcopy(results)
     temp_mean = copy.deepcopy(mean_s)
