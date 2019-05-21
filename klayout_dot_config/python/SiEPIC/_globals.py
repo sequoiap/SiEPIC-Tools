@@ -100,3 +100,4 @@ try:
 except:
     import tempfile
     TEMP_FOLDER = tempfile.mkdtemp()
+    
