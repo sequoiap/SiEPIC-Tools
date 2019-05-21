@@ -1,7 +1,7 @@
 scipy
 scikit-rf
 h5py
-matplotlib=3.0.3
+matplotlib==3.0.3
 TensorFlow
 Keras
 pygraphviz
