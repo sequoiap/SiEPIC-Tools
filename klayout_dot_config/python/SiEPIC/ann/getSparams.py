@@ -3,8 +3,7 @@
 
 import pya
 import os
-from SiEPIC.ann import export_netlist as en # import this!
-from SiEPIC.ann import cascade_netlist as cn # import this!
+from SiEPIC.ann import netlist as cn
 import SiEPIC._globals as glob
 
 fname = 'singleComp0'
