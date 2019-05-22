@@ -86,17 +86,6 @@ class DiagramMaker():
                 break
             else:
                 raise RuntimeError('ERROR: Device pair not found.')
-        # devices = []
-        # maximum = 0
-        # for cell in self.cellList:
-        #     if maximum < max(cell.ports):
-        #         maximum = max(cell.ports)
-        # for x in range(maximum + 1):
-        #     for cell in self.cellList:
-        #         if x in cell.ports:
-        #             devices.append(cell)
-        #     self.portList.append((devices[0].deviceID, devices[1].deviceID))
-        #     devices = []
 
     def makeDiagram(self):
         from time import sleep
