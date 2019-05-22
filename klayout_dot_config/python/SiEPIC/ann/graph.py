@@ -317,6 +317,7 @@ class Graph:
         windowsize_submenu.add_command(label="Default")
         windowsize_submenu.add_command(label="Large")
         editmenu.add_cascade(label="Resize window", menu=windowsize_submenu)
+        editmenu.add_command(label="Tight layout", command=self.tight_layout)
         self.menubar.add_cascade(label="Edit", menu=editmenu)
 
         insertmenu = tk.Menu(self.menubar, tearoff=0)
@@ -601,6 +602,12 @@ class Graph:
 
         self.ax.relim()
         self.ax.autoscale_view()
+        self.canvas.draw()
+
+    def tight_layout(self):
+        """Applies the tight layout to the figure.
+        """
+        self.fig.tight_layout()
         self.canvas.draw()
 
 #########################################################################
