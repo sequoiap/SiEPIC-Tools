@@ -1,3 +1,225 @@
+####################################################
+#
+#   FORMERLY qopticParser1.py FUNCTIONS BELOW
+#
+####################################################
+
+import pya
+import numpy as np
+import cmath as cm
+
+class Reader:
+    '''
+    class to extend the pya.Cell class with the functionality to read/parse 
+    files containing s-parameter data for photonic components
+    '''
+
+    def readSparamData(filename, numports, isgc):
+        '''
+        Function that takes a file containing s-parameters, parses it, and 
+        returns an array of frequency values and a 3D matrix of s-parameters
+        Args:
+            filename (str): name of file to be parsed
+            numports (int): the number of ports the photonic component has
+            isgc (boolean): flag indicating the component is a grating coupler
+                            grating couplers are a special case
+        Returns:
+            S (3D list of complex-128): S-matrix for the component associated with the file
+            F (list of float): Frequency array for the component associated with the file
+        '''
+
+        F = []
+        S = []
+        fid = open(filename, "r")
+        
+        if isgc is True:
+            '''
+            grating couplers have a different file format from the other component types
+            so a special case is required to parse them
+            '''
+
+            #grating coupler compact models have 100 points for each s-matrix index
+            arrlen = 100
+            
+            lines = fid.readlines()
+            F = np.zeros(arrlen)
+            S = np.zeros((arrlen,2,2), 'complex128')
+            for i in range(0, arrlen):
+                words = lines[i].split()
+                F[i] = float(words[0])
+                S[i,0,0] = cm.rect(float(words[1]), float(words[2]))
+                S[i,0,1] = cm.rect(float(words[3]), float(words[4]))
+                S[i,1,0] = cm.rect(float(words[5]), float(words[6]))
+                S[i,1,1] = cm.rect(float(words[7]), float(words[8]))
+            F = F[::-1]
+            S = S[::-1,:,:]
+        
+        else:
+            '''
+            Common case
+            Parsing a '.sparam' file
+            '''
+
+            line = fid.readline()
+            line = fid.readline()
+            numrows = int(tuple(line[1:-2].split(','))[0])
+            S = np.zeros((numrows, numports, numports), dtype='complex128')
+            r = m = n = 0
+            for line in fid:
+                if(line[0] == '('):
+                    continue
+                data = line.split()
+                data = list(map(float, data))
+                if(m == 0 and n == 0):
+                    F.append(data[0])
+                S[r,m,n] = data[1] * np.exp(1j*data[2])
+                r += 1
+                if(r == numrows):
+                    r = 0
+                    m += 1
+                    if(m == numports):
+                        m = 0
+                        n += 1
+                        if(n == numports):
+                            break
+        fid.close()
+        return [S, F]
+        
+#extending the pya.Cell class
+pya.Cell.Reader = Reader
+
+####################################################
+#
+#   FORMERLY export_netlist.py FUNCTIONS BELOW
+#
+####################################################
+
+import pya
+import SiEPIC.extend as se
+import SiEPIC.core as cor
+
+def spice_netlist_export(self, verbose=False, opt_in_selection_text=[]):
+    '''
+    This function gathers information from the current top cell in Klayout into a netlist
+    for a photonic circuit. This netlist is used in simulations.
+
+    Most of this function comes from a function in 'lukasc-ubc/SiEPIC-Tools/klayout_dot_config/python/SiEPIC/extend.py' which does the
+    same thing. This function has parts of that one removed because they were not needed for our toolbox.
+    '''
+
+    import SiEPIC
+    from SiEPIC import _globals
+    from time import strftime
+    from SiEPIC.utils import eng_str
+
+    from SiEPIC.utils import get_technology
+    TECHNOLOGY = get_technology()
+    if not TECHNOLOGY['technology_name']:
+        v = pya.MessageBox.warning("Errors", "SiEPIC-Tools requires a technology to be chosen.  \n\nThe active technology is displayed on the bottom-left of the KLayout window, next to the T. \n\nChange the technology using KLayout File | Layout Properties, then choose Technology and find the correct one (e.g., EBeam, GSiP).", pya.MessageBox.Ok)
+        return 'x', 'x', 0, [0]
+    # get the netlist from the entire layout
+    nets, components = self.identify_nets()
+
+    if not components:
+        v = pya.MessageBox.warning("Errors", "No components found.", pya.MessageBox.Ok)
+        return 'no', 'components', 0, ['found']
+
+    if verbose:
+        print("* Display list of components:")
+        [c.display() for c in components]
+        print("* Display list of nets:")
+        [n.display() for n in nets]
+
+    text_main = '* Spice output from KLayout SiEPIC-Tools v%s, %s.\n\n' % (
+        SiEPIC.__version__, strftime("%Y-%m-%d %H:%M:%S"))
+    text_subckt = text_main
+        
+    circuit_name = self.name.replace('.', '')  # remove "."
+    if '_' in circuit_name[0]:
+        circuit_name = ''.join(circuit_name.split('_', 1))  # remove leading _
+
+    KLayoutInterconnectRotFlip = \
+    {(0, False): [0, False],
+    (90, False): [270, False],
+    (180, False): [180, False],
+    (270, False): [90, False],
+    (0, True): [180, True],
+    (90, True): [90, True],
+    (180, True): [0, True],
+    (270, True): [270, False]}
+
+    # create the top subckt:
+    #text_subckt += '.subckt %s%s%s\n' % (circuit_name, electricalIO_pins, opticalIO_pins)
+    # assign MC settings before importing netlist components
+    text_subckt += '.param MC_uniformity_width=0 \n'
+    text_subckt += '.param MC_uniformity_thickness=0 \n'
+    text_subckt += '.param MC_resolution_x=100 \n'
+    text_subckt += '.param MC_resolution_y=100 \n'
+    text_subckt += '.param MC_grid=10e-6 \n'
+    text_subckt += '.param MC_non_uniform=99 \n'
+
+    ioports = -1
+    for c in components:
+        # optical nets: must be ordered electrical, optical IO, then optical
+        nets_str = ''
+        for p in c.pins:
+            if p.type == _globals.PIN_TYPES.ELECTRICAL:
+                nets_str += " " + c.component + '_' + str(c.idx) + '_' + p.pin_name
+        for p in c.pins:
+            if p.type == _globals.PIN_TYPES.OPTICALIO:
+                nets_str += " N$" + str(ioports)
+                ioports -= 1
+        #pinIOtype = any([p for p in c.pins if p.type == _globals.PIN_TYPES.OPTICALIO])
+        for p in c.pins:
+            if p.type == _globals.PIN_TYPES.OPTICAL:
+                if p.net.idx != None:
+                    nets_str += " N$" + str(p.net.idx)
+                #if p.net.idx != None:
+                #    nets_str += " N$" + str(p.net.idx)
+                else:
+                    nets_str += " N$" + str(ioports)
+                    ioports -= 1
+
+        trans = KLayoutInterconnectRotFlip[(c.trans.angle, c.trans.is_mirror())]
+
+        flip = ' sch_f=true' if trans[1] else ''
+        if trans[0] > 0:
+            rotate = ' sch_r=%s' % str(trans[0])
+        else:
+            rotate = ''
+
+        # Check to see if this component is an Optical IO type.
+        pinIOtype = any([p for p in c.pins if p.type == _globals.PIN_TYPES.OPTICALIO])
+
+        ignoreOpticalIOs = False
+        if ignoreOpticalIOs and pinIOtype:
+            # Replace the Grating Coupler or Edge Coupler with a 0-length waveguide.
+            component1 = "ebeam_wg_strip_1550"
+            params1 = "wg_length=0u wg_width=0.500u"
+        else:
+            component1 = c.component
+            params1 = c.params
+
+        text_subckt += ' %s %s %s ' % (component1.replace(' ', '_') +
+                                       "_" + str(c.idx), nets_str, component1.replace(' ', '_'))
+        if c.library != None:
+            text_subckt += 'library="%s" ' % c.library
+        x, y = c.Dcenter.x, c.Dcenter.y
+        text_subckt += '%s lay_x=%s lay_y=%s\n' % \
+            (params1, eng_str(x * 1e-6), eng_str(y * 1e-6))
+
+    text_subckt += '.ends %s\n\n' % (circuit_name)
+    return text_subckt, text_main
+
+pya.Cell.spice_netlist_export_ann = spice_netlist_export
+
+
+####################################################
+#
+#   FORMERLY cascade_netlist.py FUNCTIONS BELOW
+#
+####################################################
+
 # import subprocess
 # import datetime
 import os
@@ -7,7 +229,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import pya
-from SiEPIC.ann import qopticParser1 as qp
+# from SiEPIC.ann import qopticParser1 as qp
 from enum import Enum
 import skrf as rf
 from SiEPIC.ann import waveguideNN as wn
@@ -483,18 +705,3 @@ class Params:
     
 #extending pya.Cell class
 pya.Cell.Params = Params
-
-
-def main():
-    '''
-    main function used for testing purposes
-    '''
-
-    cell = Cell(1)
-    cell.f = np.linspace(interpRange[0], interpRange[1], numInterpPoints)
-    cell.wglen = 30e-6
-    cell.wgSparamSiEPIC()
-    print(np.power(abs(cell.s), 2))
-  
-if __name__ == "__main__":
-    main()
