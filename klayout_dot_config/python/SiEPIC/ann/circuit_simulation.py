@@ -1,8 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog
-from PIL import Image, ImageTk
 
-from SiEPIC.ann import NetlistDiagram
 from SiEPIC.ann.graph import Graph, DataSet, MenuItem
 import SiEPIC._globals as glob
 from SiEPIC.ann.simulation import Simulation
@@ -14,32 +12,6 @@ import os
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
-
-class SchematicDrawer:
-    def __init__(self, parent : tk.Toplevel, components):
-        self.components = components
-        # The master tk object
-        self.parent = parent
-        self.master = tk.Toplevel(parent)
-        # self.master = parent
-        self.master.title("Layout")
-
-        # The only real objects we'll need to interact with to plot and unplot
-        self.fig = Figure(figsize=(5, 4), dpi=100)
-
-        # Objects needed simply for the sake of embedding the graph in tk
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.master)
-        self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
-        self.fig.clear()
-        self.ax = self.fig.add_subplot(111)
-
-    def draw(self):
-        for comp in self.components:
-            self.ax.plot(comp.posx, comp.posy, 'ro')
-            externals = [x for x in comp.ports if x < 0 ]
-            self.ax.text(comp.posx, comp.posy, "  Port " + str(-externals[0]) + ": " + comp.label)
-        self.ax.axis('off')
-        self.canvas.draw()
 
 class TkRoot(tk.Tk):
     def __init__(self):
@@ -67,15 +39,6 @@ class CircuitAnalysisGUI():
 
         # Set the window title and size
         self.parent.title('Circuit Simulation')
-        w = 900 # width for the Tk root
-        h = 900 # height for the Tk root
-        ws = self.parent.winfo_screenwidth() # width of the screen
-        hs = self.parent.winfo_screenheight() # height of the screen
-        # calculate x and y coordinates for the Tk root window
-        x = (ws - w) / 2
-        y = (hs - h) / 2
-        # set the dimensions of the screen and where it is placed
-        self.parent.geometry('%dx%d+%d+%d' % (w, h, x, y))
 
         # Initialize the menu and figures
         self.create_menu()
@@ -111,12 +74,10 @@ class CircuitAnalysisGUI():
 
     def init_figures(self):
         # Port selection menu
-        self.controls = tk.Frame(self.parent, width=700, height=30, bd=1)
+        self.controls = tk.Frame(self.parent, bd=1)
         self.controls.grid(row=0, column=0)
         # Schematic figure initialization
-        self.schematic_height = 900
-        self.schematic_width = 900
-        self.schematic = tk.Frame(self.parent, height=self.schematic_height, width=self.schematic_width)
+        self.schematic = tk.Frame(self.parent)
         self.schematic.grid(row=1, column=0)
 
     def set_controls(self):
@@ -139,24 +100,34 @@ class CircuitAnalysisGUI():
         tk.Label(self.controls, text=" Charts: ").grid(row=0, column=5)
         tk.Button(self.controls, text="Magnitude", command=self.open_magnitude).grid(row=0, column=6)
         tk.Button(self.controls, text="Phase", command=self.open_phase).grid(row=0, column=7)
-        tk.Button(self.controls, text="Layout", command=self.open_layout).grid(row=0, column=8)
 
         self.magnitude = None
         self.phase = None
 
     def generate_schematic(self):
-        NetlistDiagram.run()
-        wd = os.getcwd()
-        temppath = glob.TEMP_FOLDER
-        os.chdir(temppath)
-        original = Image.open("Schematic.png")
-        resized = original.resize((870, 895), Image.ANTIALIAS)
-        img = ImageTk.PhotoImage(resized)
-        label = tk.Label(self.schematic, image=img)
-        label.image = img
-        label.bind("<Button-1>", self.open_schematic)
-        label.pack()
-        os.chdir(wd)
+        """
+        This function creates a figure object and places it within the schematic slot in the parent
+        tkinter window. It then calls 'draw' to plot the layout points on the canvas.
+        """
+        # The only real objects we'll need to interact with to plot and unplot
+        self.components = self.simulation.external_components
+        self.fig = Figure(figsize=(5, 4), dpi=100)
+
+        # Objects needed simply for the sake of embedding the graph in tk
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.schematic)
+        self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        self.fig.clear()
+        self.ax = self.fig.add_subplot(111)
+        self.draw()
+
+    def draw(self):
+        for comp in self.components:
+            self.ax.plot(comp.posx, comp.posy, 'ro')
+            externals = [x for x in comp.ports if x < 0 ]
+            self.ax.text(comp.posx, comp.posy, "  Port " + str(-externals[0]) + ": " + comp.label)
+        self.ax.axis('off')
+        self.canvas.draw()
+
 
     def export_s_matrix(self, ext=0):
         fileTypes = [("MATLAB file","*.mat"), ("NumPy file","*.npz")]
@@ -237,10 +208,10 @@ class CircuitAnalysisGUI():
     def _phase_closed(self):
         self.phase = None
 
-    def open_layout(self):
-        comp = self.simulation.external_components
-        fig = SchematicDrawer(self.parent, comp)
-        fig.draw()
+    # def open_layout(self):
+    #     comp = self.simulation.external_components
+    #     fig = SchematicDrawer(self.parent, comp)
+    #     fig.draw()
 
     def frequencyToWavelength(self, frequencies):
         c = 299792458
@@ -266,34 +237,22 @@ class CircuitAnalysisGUI():
             self.phase.plot(*self.simulation.getPhaseByWavelengthNm(fromPort, toPort), name)
             self.phase.xlabel('Wavelength (nm)')
 
-    def open_schematic(self, event):
-        import subprocess, os, sys
-        wd = os.getcwd()
-        temppath = glob.TEMP_FOLDER
-        os.chdir(temppath)
-        filepath = "Schematic.png"
-        if sys.platform.startswith('darwin'):
-            subprocess.call(('open', filepath))
-        elif os.name == 'nt': # For Windows
-            os.startfile(filepath)
-        elif os.name == 'posix': # For Linux, Mac, etc.
-            subprocess.call(('xdg-open', filepath))
-        os.chdir(wd)
-
     def open_folder(self):
         import webbrowser
         path = glob.TEMP_FOLDER
         webbrowser.open(path)
         
-    def selection_changed(self):#, event):
+    def selection_changed(self):
         fromPort = self.first.get()
         toPort = self.second.get()
         try:
             self.update_magnitude(int(self.first.get()) - 1, int(self.second.get()) - 1, str(fromPort) + "_to_" + str(toPort))
+            self.magnitude.tight_layout()
         except:
             pass
         try:
             self.update_phase(int(self.first.get()) - 1, int(self.second.get()) - 1, str(fromPort) + "_to_" + str(toPort))
+            self.phase.tight_layout()
         except:
             pass
     
