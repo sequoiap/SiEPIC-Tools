@@ -101,7 +101,7 @@ class CircuitAnalysisGUI():
         filemenu = tk.Menu(menubar, tearoff=0)
         # filemenu.add_command(label="Open")
         # filemenu.add_command(label="Save")
-        # filemenu.add_command(label="Enlarge Schematic", command=self.open_schematic)
+        filemenu.add_command(label="Open folder", command=self.open_folder)
         filemenu.add_command(label="Export s-matrix", command=self.export_s_matrix)
         filemenu.add_command(label="Exit", command=self.parent.on_closing)
         menubar.add_cascade(label="File", menu=filemenu)
@@ -279,6 +279,11 @@ class CircuitAnalysisGUI():
         elif os.name == 'posix': # For Linux, Mac, etc.
             subprocess.call(('xdg-open', filepath))
         os.chdir(wd)
+
+    def open_folder(self):
+        import webbrowser
+        path = glob.TEMP_FOLDER
+        webbrowser.open(path)
         
     def selection_changed(self):#, event):
         fromPort = self.first.get()
