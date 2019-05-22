@@ -122,6 +122,18 @@ class ListSelectRenameDialog:
     def _on_close(self):
         self.master.destroy()
 
+class MenuGroup:
+    """
+    TODO: Implement such that classing importing graph don't have to create their own dictionaries
+    but can just create a MenuGroup and pass that in to the Graph.
+    """
+    
+    def __init__(self):
+        self.menuitems = []
+
+    def add(self, item : MenuItem):
+        self.menuitems.append(item)
+
 class MenuItem:
     def __init__(self, label=None, callback=None):
         self.label = label
