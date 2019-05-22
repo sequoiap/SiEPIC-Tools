@@ -122,22 +122,22 @@ class ListSelectRenameDialog:
     def _on_close(self):
         self.master.destroy()
 
+class MenuItem:
+    def __init__(self, label=None, callback=None):
+        self.label = label
+        self.callback = callback
+
 class MenuGroup:
     """
     TODO: Implement such that classing importing graph don't have to create their own dictionaries
     but can just create a MenuGroup and pass that in to the Graph.
     """
-    
+
     def __init__(self):
         self.menuitems = []
 
-    def add(self, item : MenuItem):
+    def add(self, item: MenuItem):
         self.menuitems.append(item)
-
-class MenuItem:
-    def __init__(self, label=None, callback=None):
-        self.label = label
-        self.callback = callback
 
 class DataSet:
     """
@@ -297,8 +297,7 @@ class Graph:
         #filemenu.add_command(label="Open", command=self.filemenu_Open)
         filemenu.add_command(label="Close", command=self.filemenu_Close)
         filemenu.add_separator()
-        filemenu.add_command(label="Export to .mat", command=self.filemenu_ExportMat)
-        #filemenu.add_command(label="Save as .txt")
+        filemenu.add_command(label="Export to...", command=self.filemenu_Export)
         #filemenu.add_separator()
         #filemenu.add_command(label="Print")
         self.menubar.add_cascade(label="File", menu=filemenu)
@@ -355,19 +354,33 @@ class Graph:
         f = filedialog.askopenfilename(**options)
         print("TODO")        
 
-    def filemenu_ExportMat(self):
+    def filemenu_Export(self):
+        """
+        If saved as .npz, note that it's a dictionary of lines being saved.
+        On loading, you must specify allow_pickle=True.
+        To access items in the dictionary, first take them out of the array.
+
+        Example:
+        --------
+        a = np.load('sample.npz')
+        contents = a['lines'].item()
+        """
         line_dict = {}
         for line in self.lines.values():
             for name, arr in line.to_mat().items():
                 line_dict[name] = arr
-        fileTypes = [("MATLAB file","*.mat")]
+        fileTypes = [("MATLAB file","*.mat"), ("NumPy file","*.npz")]
         options = {}
         options['initialdir'] = os.path.expanduser('~')
         options['filetypes'] = fileTypes
         options['parent'] = self.master
         filename = filedialog.asksaveasfilename(**options)
         if filename:
-            sio.savemat(filename, line_dict)
+            _, ext = os.path.splitext(filename)
+            if ext == ".mat":
+                sio.savemat(filename, line_dict)
+            elif ext == ".npz":
+                np.savez(filename, lines=line_dict)
             
     def editmenu_DeleteLine(self):
         linelist = []
