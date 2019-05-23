@@ -1,3 +1,23 @@
+"""
+netlist.py
+
+Author: Hyrum Gunther, Sequoia Ploeg
+Modified on 5/23/2019
+
+Dependencies:
+- pya
+    Python connection to KLayout, allowing access to cells and other layout 
+    objects.
+- numpy
+    Lots of math happens here!
+
+This file does everything related to the netlist; writing, reading, you name it.
+"""
+
+class JSONNetlistWriter:
+    pass
+
+
 ####################################################
 #
 #   FORMERLY qopticParser1.py FUNCTIONS BELOW
@@ -186,7 +206,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import pya
-# from SiEPIC.ann import qopticParser1 as qp
 from enum import Enum
 import skrf as rf
 from SiEPIC.ann import waveguideNN as wn
@@ -311,11 +330,10 @@ class Cell():
     the 'pya.Cell' class
     '''
 
-    def __init__(self, id):
+    def __init__(self):
         '''
         init function taking an ID
         '''
-        self.deviceID = id
         self.devType = None
         self.p = []
         self.iswg = False
@@ -448,7 +466,7 @@ class Cell():
         '''
         print port id's of Cell
         '''
-        print("DEVICE ID:", self.deviceID, "has", len(self.p), "port(s).")
+        print("DEVICE has", len(self.p), "ports.")
         print(self.p)
 
 
@@ -474,7 +492,6 @@ class Parser:
         '''
 
         self.cellList = []
-        self.nextID = 0
         self.filepath = filepath
         self.nports = 0
 
@@ -517,8 +534,7 @@ class Parser:
         to read the s-parameter data from a compact model file
         '''
 
-        newCell = Cell(self.nextID)
-        self.nextID += 1
+        newCell = Cell()
 
         #search the DEVTYPE enum for this entry
         for devtype in DEVTYPE:
@@ -586,9 +602,8 @@ class Parser:
 
             #if pin occurances are in different Cells
             else:
-                d = Cell(self.nextID)
+                d = Cell()
                 d.f = self.cellList[0].f
-                self.nextID += 1
                 d.s = rf.connect_s(self.cellList[ca].s, ia, self.cellList[cb].s, ib)
                 del self.cellList[ca].p[ia]
                 del self.cellList[cb].p[ib]
