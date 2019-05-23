@@ -189,7 +189,7 @@ class CircuitAnalysisGUI():
     def open_magnitude(self):
         if self.magnitude is None:
             self.magnitude = Graph(self.parent, "Magnitude", additional_menus=self.additional_menus(), onCloseCallback=self._magnitude_closed)
-            self.magnitude.ylabel(r'$|A| ^2$')
+            self.magnitude.ylabel(r'$|E| ^2$')
             self.magnitude.title('Magnitude-Squared')
         else:
             self.magnitude.raise_window()
