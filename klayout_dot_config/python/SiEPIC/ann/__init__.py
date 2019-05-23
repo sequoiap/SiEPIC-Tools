@@ -1,5 +1,24 @@
-# Alec Hammond's ANN Python integration
+"""Artificial Neural Network (ANN) SiEPIC Toolbox Extension
 
-from . import loadNN, netlist, waveguideNN, getSparams, NetlistDiagram, circuit_simulation, simulation, model, monte_carlo_simulation
+This module implements a free and open source photonic integrated circuit (PIC) simulation engine
+as an alternative to Lumerical's INTERCONNECT. It is speedy and easily extensible.
+"""
+
+__all__ = [
+    'loadNN',
+    'netlist',
+    'waveguideNN',
+    'getSparams',
+    'NetlistDiagram',
+    'circuit_simulation',
+    'simulation',
+    'model',
+    'monte_carlo_simulation',
+    'models',
+]
+__version__ = '0.1'
+__author__ = 'Sequoia Ploeg, Hyrum Gunther'
+
+from . import *
 
 print('ANN Python integration (CamachoLab)')
