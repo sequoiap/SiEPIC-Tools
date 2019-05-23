@@ -3,6 +3,13 @@ import copy
 
 from SiEPIC.ann import getSparams as gs
 from SiEPIC.ann import NetlistDiagram
+from SiEPIC.ann import models
+
+
+
+
+def get_wg_s_params(**kwargs):
+    wg_model.get_s_params(**kwargs)
 
 class MathPrefixes:
     TERA = 1e12

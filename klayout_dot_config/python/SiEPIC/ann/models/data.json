@@ -1,0 +1,39 @@
+[
+  {
+    "component_type": "ebeam_wg_integral_1550",
+    "height": 220,
+    "lay_x": 0,
+    "lay_y": 0,
+    "length": 5e-05,
+    "nets": [],
+    "points": [],
+    "radius": 0,
+    "width": 5.0005129e-07,
+    "-meta": {
+      "classes": {
+        "/": "__main__.ebeam_wg_integral_1550"
+      },
+      "dump_time": "2019-05-23T22:11:58Z"
+    }
+  },
+  {
+    "component_type": "ebeam_wg_integral_1550",
+    "height": 220,
+    "lay_x": 0,
+    "lay_y": 0,
+    "length": 0.00015,
+    "nets": [
+      2,
+      3
+    ],
+    "points": [],
+    "radius": 0,
+    "width": 4.995129e-07,
+    "-meta": {
+      "classes": {
+        "/": "__main__.ebeam_wg_integral_1550"
+      },
+      "dump_time": "2019-05-23T22:11:58Z"
+    }
+  }
+]

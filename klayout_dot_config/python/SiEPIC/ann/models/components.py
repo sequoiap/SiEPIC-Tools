@@ -1,69 +1,130 @@
 """
 components.py
 
+Author: Sequoia Ploeg
+Modified on 5/23/2019
+
+Dependencies:
+- importlib
+    Dynamically imports the installed component models.
+- jsons
+    Similar to GSON in Java, serializes and deserializes custom models.
+    API: https://jsons.readthedocs.io/en/latest/index.html
+- json
+    Allows for writing and reading from JSON files.
+
+This file loads all components within the models package. It also provides 
+netlist capabilities, formatting all components as JSON.
 """
 
+
+"""
+This is where you should list all installed components from which you plan to get 
+s-parameters. In addition to listing the modules here, make sure to list the 
+relevant modules within each component class below, too, under _simulation_model.
+"""
 INSTALLED_COMPONENTS = [
-    '.wg_ann',
-    '.wg1550_lumerical',
+    'wg_ann',
+    'wg1550_lumerical',
 ]
 
-
-#######################################
-#                                     #
-#           IMPLEMENTATION            #
-#                                     #
-#######################################
-
+"""
+BEGIN DO NOT ALTER
+"""
+import sys
 from importlib import import_module
 import jsons
-from enum import Enum
+import json
 
 LOADED_MODELS = {}
 
-for component in INSTALLED_COMPONENTS:
-    mod = import_module(component, 'SiEPIC.ann.models')
-    LOADED_MODELS[component.replace('.', '')] = mod.Model
-
-# for key, val in LOADED_MODELS.items():
-#     print(key, val)
+try:
+    for component in INSTALLED_COMPONENTS:
+        mod = import_module('.' + component, 'SiEPIC.ann.models')
+        LOADED_MODELS[component] = mod.Model
+except:
+    print("SiEPIC-Tools is not in the current namespace.")
+    for component in INSTALLED_COMPONENTS:
+        mod = import_module(component)
+        LOADED_MODELS[component] = mod.Model
+"""
+END DO NOT ALTER
+"""
 
 class Component:
     """This class represents an arbitrary component in the netlist. All attributes can
     be initialized as keyword arguments in the __init__ function.
 
-    This is the base class for all netlist components. All components have a type and a
-    list of ports.
+    This is the base class for all netlist components. All components have a type, a
+    list of nets, x/y layout positions, and a list of simulation models from which the
+    component in question could retrieve s-parameters.
+
+    All class extensions should provide additional data members with type hints and 
+    default values if necessary.
+
+    Class Attributes
+    ----------------
+    _simulation_models : dict
+        A dictionary of installed models (packages) from which this component could 
+        retrieve s-parameters. This is a class attribute, and is not stored at the instance 
+        level or in JSON output. It's format is {'[Human Readable Name]': '[Model Location]'}.
+    # _selected_model : str
+    #     A key from the _simulation_models dictionary.
 
     Attributes
     ----------
-    compType : str
+    component_type : str
         The name of the component type.
-    ports : list of ints
+    nets : list of ints
         A list of all port connections (required to be integers).
+    lay_x : float
+        The x-position of the component in the overall layout.
+    lay_y : float
+        The y-position of the component in the overall layout.
     """
-    compType: str
-    ports: list
+    component_type: str = None
+    nets: list = []
+    lay_x: float = 0
+    lay_y: float = 0
+    _simulation_models: dict = {}
+
+    @staticmethod
+    def setup(obj):
+        obj._selected_model = next(iter(obj._simulation_models)) if obj._simulation_models else None
+        obj._model_ref = LOADED_MODELS[obj._simulation_models[obj._selected_model]] if obj._selected_model else None
 
     def __init__(self, *args, **kwargs):
         """Initializes a Component dataclass.
 
         Parameters
         ----------
-        compType : str
-            The name of the component type.
-        ports : list of ints
+        nets : list of ints
             A list of all port connections (required to be integers).
+        lay_x : float
+            The x-position of the component in the overall layout.
+        lay_y : float
+            The y-position of the component in the overall layout.
         """
-        if 'compType' in kwargs:
-            self.compType = kwargs.get('compType')
-        if 'ports' in kwargs:
-            self.ports = kwargs.get('ports')
+        self.component_type = type(self).__name__
+        if 'nets' in kwargs:
+            self.nets = kwargs.get('nets')
+        if 'lay_x' in kwargs:
+            self.lay_x = kwargs.get('lay_x')
+        if 'lay_y' in kwargs:
+            self.lay_y = kwargs.get('lay_y')
 
-    def __repr__(self):
-        return str(self.__dict__)
+    @classmethod
+    def set_model(cls, key):
+        cls._selected_model = key
+        cls._model_ref = LOADED_MODELS[cls._simulation_models[cls._selected_model]] if cls._selected_model else None
 
-class Waveguide(Component):
+    def __str__(self):
+        return 'Object::' + str(self.__dict__)
+
+
+
+
+class ebeam_wg_integral_1550(Component):
     """This class represents a waveguide component in the netlist. All attributes can
     be initialized as keyword arguments in the __init__ function.
 
@@ -71,10 +132,6 @@ class Waveguide(Component):
 
     Attributes
     ----------
-    compType : str
-        The name of the component type.
-    ports : list of ints
-        A list of all port connections (required to be integers).
     length : float
         Total waveguide length.
     width : float
@@ -82,25 +139,29 @@ class Waveguide(Component):
     height : float
         Designed waveguide height.
     """
-    length: float
-    width: float
-    height: float
+    length: float = 0
+    width: float = 500e-9
+    height: float = 220e-9
+    radius: float = 0
+    points: list = []
+
+    _simulation_models = {
+        'ANN': 'wg_ann',
+        'Lumerical': 'wg1550_lumerical',
+    }
 
     def __init__(self, *args, **kwargs):
-        """Initializes a Waveguide dataclass, which inherits from Component.
+        """Initializes a ebeam_wg_integral_1550 dataclass, which inherits from Component.
 
         Parameters
         ----------
-        compType : str
-            The name of the component type.
-        ports : list of ints
-            A list of all port connections (required to be integers).
         length : float
             Total waveguide length.
         width : float
             Designed waveguide width.
         height : float
             Designed waveguide height.
+        points : list of tuples
         """
         super().__init__(*args, **kwargs)
         if 'length' in kwargs:
@@ -109,38 +170,344 @@ class Waveguide(Component):
             self.width = kwargs.get('width')
         if 'height' in kwargs:
             self.height = kwargs.get('height')
+        if 'points' in kwargs:
+            self.points = kwargs.get('points')
 
-class CompType(Enum):
-    '''
-    Enum listing of all available component types.
 
-    Name, value pairs comprise of the component type as shown on the netlist, paired with
-    its dataclass model as the value.
-    '''
 
-    ebeam_bdc_te1550 = Component
-    ebeam_dc_halfring_te1550 = Component
-    ebeam_gc_te1550 = Component
-    ebeam_y_1550 = Component
-    ebeam_terminator_te1550 = Component
-    ebeam_wg_integral_1550 = Waveguide
 
-def component_factory(JSONobj: str):
-    """Creates one of the objects that inherits from Component (based on the value of compType)
-    given the object's JSON representation.
+class ebeam_bdc_te1550(Component):
+    """This class represents a bidirectional coupler component in the netlist. All attributes 
+    can be initialized as keyword arguments in the __init__ function.
 
-    Parameters
+    This class inherits from Component and inherits all of its data members.
+
+    Attributes
     ----------
-    JSONobj : str
-        The string representation of the JSON object.
+    Inherited
     """
-    instance = jsons.load(JSONobj, Component)
+    _simulation_models = {
+        
+    }
     
-    for type_ in CompType:
-        if instance.compType == type_.name:
-            return jsons.load(JSONobj, type_.value)
+    def __init__(self, *args, **kwargs):
+        """Initializes a ebeam_bdc_te1550 dataclass, which inherits from Component.
 
+        Parameters
+        ----------
+        Inherited
+        """
+        super().__init__(*args, **kwargs)
+
+
+
+
+class ebeam_gc_te1550(Component):
+    """This class represents a grating coupler component in the netlist. All attributes can
+    be initialized as keyword arguments in the __init__ function.
+
+    This class inherits from Component and inherits all of its data members.
+
+    Attributes
+    ----------
+    Inherited
+    """
+    _simulation_models = {
+        
+    }
+    
+    def __init__(self, *args, **kwargs):
+        """Initializes a ebeam_gc_te1550 dataclass, which inherits from Component.
+
+        Parameters
+        ----------
+        Inherited
+        """
+        super().__init__(*args, **kwargs)
+
+
+
+
+class ebeam_y_1550(Component):
+    """This class represents a Y-branch component in the netlist. All attributes can
+    be initialized as keyword arguments in the __init__ function.
+
+    This class inherits from Component and inherits all of its data members.
+
+    Attributes
+    ----------
+    Inherited
+    """
+    _simulation_models = {
+        
+    }
+    
+    def __init__(self, *args, **kwargs):
+        """Initializes a ebeam_y_1550 dataclass, which inherits from Component.
+
+        Parameters
+        ----------
+        Inherited
+        """
+        super().__init__(*args, **kwargs)
+
+
+
+
+class ebeam_terminator_te1550(Component):
+    """This class represents a terminator component in the netlist. All attributes can
+    be initialized as keyword arguments in the __init__ function.
+
+    This class inherits from Component and inherits all of its data members.
+
+    Attributes
+    ----------
+    Inherited
+    """
+    _simulation_models = {
+        
+    }
+    
+    def __init__(self, *args, **kwargs):
+        """Initializes a ebeam_terminator_te1550 dataclass, which inherits from Component.
+
+        Parameters
+        ----------
+        Inherited
+        """
+        super().__init__(*args, **kwargs)
+
+
+
+
+class ebeam_dc_halfring_te1550(Component):
+    """This class represents a half-ring component in the netlist. All attributes can
+    be initialized as keyword arguments in the __init__ function.
+
+    This class inherits from Component and inherits all of its data members.
+
+    Attributes
+    ----------
+    Inherited
+    """
+    _simulation_models = {
+        
+    }
+    
+    def __init__(self, *args, **kwargs):
+        """Initializes a ebeam_dc_halfring_te1550 dataclass, which inherits from Component.
+
+        Parameters
+        ----------
+        Inherited
+        """
+        super().__init__(*args, **kwargs)
+
+
+
+
+"""
+
+IMPLEMENTATION CODE BELOW, PROCEED WITH CAUTION!
+
+"""
+
+def strToSci(str):
+    '''
+    local function to convert strings written in Klayout's 
+    exponential notation into floats
+    Args:
+        str (str): string to convert to float
+    Returns:
+        float representation of the input string
+    '''
+
+    ex = str[-1]
+    base = float(str[:-1])
+    if(ex == 'm'):
+        return base * 1e-3
+    elif(ex == 'u'):
+        return base * 1e-6
+    elif(ex == 'n'):
+        return base * 1e-9
+    else:
+        return float(str(base) + ex)
+
+class Parser:
+    '''
+    Parser class uses local 'Cell' class and an input netlist to cascade
+    the s-matrices of a photonic circuit, simulating its transmission behavior
+
+    'parseFile' parses through the netlist to identify components and gathers their s-parameters
+    using 'parseCell'. It collects all these components into its 'cellList'
+
+    'parceCell' takes a netlist entry about a single component and collects or calculates its
+    s-parameter data.
+
+    'cascadeCells' takes the cellList gathered by 'parseFile' and cascades all the s-matrices together
+    using scikit-rf's 'connect_s' and 'innerconnect_s' functions, deleting already connected Cells as
+    it goes. The result is a single Cell object with an s-matrix representing the cascaded circuit
+    '''
+
+    def __init__(self):
+        '''
+        init function takes a filepath to a netlist that represents a photonic circuit
+        '''
+        self.component_list = []
+        self.nports = 0
+
+
+    def parseFile(self, filepath: str):
+        '''
+        reads the netlist file and calls 'parseCell' to create Cell objects from 
+        the netlist entries
+        Args:
+            none
+            self.filepath is the needed path to the netlist
+        Returns
+            none
+            the call to 'parseCell' will add a new Cell to self.cellList
+        '''
+
+        with open(filepath) as fid:
+            lines = fid.readlines()
+            for line in lines:
+                elements = line.split()
+                if len(elements) > 0:
+                    if (".ends" in elements[0]):
+                        break
+                    elif ("." in elements[0]) or ("*" in elements[0]):
+                        continue
+                    else:
+                        self.parseCell(elements)
+        return self.component_list
+        
+
+    def parseCell(self, line_elements: list):
+        '''
+        Parses a line from the netlist, already split into individual elements, and 
+        converts it into a new Component object.
+        
+        Parameters
+        ----------
+        line_elements : list
+            A list of all the elements on a line (already split by some delimiter).
+        '''
+
+        component = None
+        nets = []
+        for item in line_elements[1:]:
+            if "N$" in item:
+                net = str(item).replace("N$", '')
+                nets.append(net)
+                if int(net) > self.nports:
+                    self.nports = int(net)
+                continue
+            elif component is None:
+                component = getattr(sys.modules[__name__], item)()
+            elif "lay_x=" in item:
+                component.lay_x = float(str(item).replace("lay_x=", ''))
+            elif "lay_y=" in item:
+                component.lay_y = float(str(item).replace("lay_y=", ''))
+            elif "radius=" in item:
+                component.radius = float(str(item).replace("radius=", ''))
+            elif "wg_length=" in item:
+                lenth = str(item).replace("wg_length=", '')
+                component.length = strToSci(lenth)
+            elif "wg_width=" in item:
+                width = str(item).replace("wg_width=", '')
+                component.width = strToSci(width)
+            elif "points=" in item:
+                # The regex, in case you ever need it: /(\[[\d]+[\,][\d]+\])/g
+                points = str(item).replace("points=", '')
+                points = points.replace("\"[[", '')
+                points = points.replace("]]\"", '')
+                point_list = points.split('],[')
+                for point in point_list:
+                    out = point.split(',')
+                    component.points.append((float(out[0]), float(out[1])))
+        component.nets = nets
+        self.component_list.append(component)
+
+
+    # def cascadeCells(self):
+    #     '''
+    #     For each pin in the circuit, the s-matrices of the Cells containing that pin are cascaded
+    #     using scikit-rf funtions. 'innerconnect_s' if the two occurances of the pin are in the
+    #     same Cell, 'connect_s' if they are in two different cells
+
+    #     For a pin:
+    #     * 'findPortMatch' is called to find where the two occurances of the pin are
+    #     * If they are in the same Cell, use 'innerconnect_s' to cascade the s-matrices and delete the
+    #         connected ports from the Cell's port list
+    #     * If they are in different Cells, create a new Cell object and let its s-matrix be the result 
+    #         of 'connect_s' for the two Cells. Delete the two Cells from the cellList
+
+    #     Repeat this process until all pins have been connected
+
+    #     One Cell will remain in the cellList. Its s-matrix represents the transmission behavior of the
+    #     circuit as a whole
+    #     '''
+
+    #     if self.nports == 0:
+    #         return
+    #     for n in range(0, self.nports + 1):
+    #         ca, ia, cb, ib = findPortMatch(str(n), self.cellList)
+
+    #         #if pin occurances are in the same Cell
+    #         if ca == cb:
+    #             self.cellList[ca].s = rf.innerconnect_s(self.cellList[ca].s, ia, ib)
+    #             del self.cellList[ca].p[ia]
+    #             if ia < ib:
+    #                 del self.cellList[ca].p[ib-1]
+    #             else:
+    #                 del self.cellList[ca].p[ib]
+
+    #         #if pin occurances are in different Cells
+    #         else:
+    #             d = Cell()
+    #             d.f = self.cellList[0].f
+    #             d.s = rf.connect_s(self.cellList[ca].s, ia, self.cellList[cb].s, ib)
+    #             del self.cellList[ca].p[ia]
+    #             del self.cellList[cb].p[ib]
+    #             d.p = self.cellList[ca].p + self.cellList[cb].p
+    #             del self.cellList[ca]
+    #             if ca < cb:
+    #                 del self.cellList[cb-1]
+    #             else:
+    #                 del self.cellList[cb]
+    #             self.cellList.append(d)
+
+# Finish setting all class variables for component subclasses
+comp_subclasses = [class_ for class_ in Component.__subclasses__()]
+for class_ in comp_subclasses:
+    class_.setup(class_)
+
+
+def netlist_lumerical_to_json(filename):
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+    print(os.getcwd())
+    components = Parser().parseFile(filename)
+    output = jsons.dump(components, verbose=True, strip_privates=True)
+    with open('netlist.json', 'w') as outfile:
+        json.dump(output, outfile, indent=2)
+
+
+import os
 if __name__ == "__main__":
-    c = Waveguide(compType='ebeam_wg_integral_1550', ports=[1,2], length=50, width=60, height=70)
-    dumped = jsons.dump(c)
-    obj = component_factory(dumped)
+    w1 = ebeam_wg_integral_1550(length=50e-6, width=500.05129e-9, height=220)
+    w2 = ebeam_wg_integral_1550(nets=[2,3], length=150e-6, width=499.5129e-9, height=220)
+    items = []
+    items.append(w1)
+    items.append(w2)
+    output = jsons.dump(items, verbose=True, strip_privates=True)
+    with open('data.json', 'w') as outfile:
+        json.dump(output, outfile, indent=2)
+    data = None
+    with open('data.json') as jsonfile:
+        data = json.load(jsonfile)
+    inputstr = jsons.load(data)
+    # os.remove('data.json')
+    LOADED_MODELS[ebeam_wg_integral_1550._simulation_models['Lumerical']].about()
+
+    netlist_lumerical_to_json('netlist.txt')
