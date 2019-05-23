@@ -1,5 +1,3 @@
-import subprocess
-import datetime
 import os
 import SiEPIC._globals as glob
 from SiEPIC.ann.model import Component
@@ -121,8 +119,7 @@ def demo():
     wd = os.getcwd()
     temppath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp")
     os.chdir(temppath)
-    fname = 'singleComp0'
-    netname = '_netlist' + fname + '.txt'
+    netname = 'netlist.txt'
     test = Parser(netname)
     test.parseFile()
     print("# of Components:", test.getComponentCount())
@@ -136,8 +133,7 @@ def getExternalPortList():
     wd = os.getcwd()
     temppath = glob.TEMP_FOLDER
     os.chdir(temppath)
-    fname = 'singleComp0'
-    netname = '_netlist' + fname + '.txt'
+    netname = 'netlist.txt'
     netlist = Parser(netname)
     netlist.parseFile()
     externals, components = netlist.getExternals()
@@ -148,8 +144,7 @@ def run():
     wd = os.getcwd()
     temppath = glob.TEMP_FOLDER
     os.chdir(temppath)
-    fname = 'singleComp0'
-    netname = '_netlist' + fname + '.txt'
+    netname = 'netlist.txt'
     netlist = Parser(netname)
     netlist.parseFile()
     diagram = DiagramMaker(netlist.getComponents())

@@ -6,10 +6,7 @@ import os
 from SiEPIC.ann import netlist as cn
 import SiEPIC._globals as glob
 
-fname = 'singleComp0'
-netname = '_netlist' + fname + '.txt'
-matname = fname + '.mat'
-freqname = 'freq' + fname + '.mat'
+netname = 'netlist.txt'
 orig_cwd = os.getcwd()
 temp_cwd = glob.TEMP_FOLDER
 
@@ -19,7 +16,7 @@ def generateNetlist():
     # Get the current topcell from Klayout
     cell = pya.Application.instance().main_window().current_view().active_cellview().cell
     # Get the netlist from the cell
-    text_subckt, text_main = cell.spice_netlist_export_ann(verbose=False)
+    text_subckt = cell.spice_netlist_export_ann()
     #print(dir(cell))
     # Write the netlist to a temporary file
     fid = open(netname, 'w')
