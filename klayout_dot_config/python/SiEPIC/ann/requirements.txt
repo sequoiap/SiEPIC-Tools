@@ -4,3 +4,4 @@ h5py
 matplotlib==3.0.3
 TensorFlow
 Keras
+jsons==0.8.9
