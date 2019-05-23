@@ -98,7 +98,7 @@ import pya
 import SiEPIC.extend as se
 import SiEPIC.core as cor
 
-def spice_netlist_export(self, verbose=False, opt_in_selection_text=[]):
+def spice_netlist_export(self):
     '''
     This function gathers information from the current top cell in Klayout into a netlist
     for a photonic circuit. This netlist is used in simulations.
@@ -124,39 +124,12 @@ def spice_netlist_export(self, verbose=False, opt_in_selection_text=[]):
         v = pya.MessageBox.warning("Errors", "No components found.", pya.MessageBox.Ok)
         return 'no', 'components', 0, ['found']
 
-    if verbose:
-        print("* Display list of components:")
-        [c.display() for c in components]
-        print("* Display list of nets:")
-        [n.display() for n in nets]
-
-    text_main = '* Spice output from KLayout SiEPIC-Tools v%s, %s.\n\n' % (
+    text_subckt = '* Spice output from KLayout SiEPIC-Tools v%s, %s.\n\n' % (
         SiEPIC.__version__, strftime("%Y-%m-%d %H:%M:%S"))
-    text_subckt = text_main
         
     circuit_name = self.name.replace('.', '')  # remove "."
     if '_' in circuit_name[0]:
         circuit_name = ''.join(circuit_name.split('_', 1))  # remove leading _
-
-    KLayoutInterconnectRotFlip = \
-    {(0, False): [0, False],
-    (90, False): [270, False],
-    (180, False): [180, False],
-    (270, False): [90, False],
-    (0, True): [180, True],
-    (90, True): [90, True],
-    (180, True): [0, True],
-    (270, True): [270, False]}
-
-    # create the top subckt:
-    #text_subckt += '.subckt %s%s%s\n' % (circuit_name, electricalIO_pins, opticalIO_pins)
-    # assign MC settings before importing netlist components
-    text_subckt += '.param MC_uniformity_width=0 \n'
-    text_subckt += '.param MC_uniformity_thickness=0 \n'
-    text_subckt += '.param MC_resolution_x=100 \n'
-    text_subckt += '.param MC_resolution_y=100 \n'
-    text_subckt += '.param MC_grid=10e-6 \n'
-    text_subckt += '.param MC_non_uniform=99 \n'
 
     ioports = -1
     for c in components:
@@ -180,36 +153,20 @@ def spice_netlist_export(self, verbose=False, opt_in_selection_text=[]):
                     nets_str += " N$" + str(ioports)
                     ioports -= 1
 
-        trans = KLayoutInterconnectRotFlip[(c.trans.angle, c.trans.is_mirror())]
-
-        flip = ' sch_f=true' if trans[1] else ''
-        if trans[0] > 0:
-            rotate = ' sch_r=%s' % str(trans[0])
-        else:
-            rotate = ''
-
         # Check to see if this component is an Optical IO type.
         pinIOtype = any([p for p in c.pins if p.type == _globals.PIN_TYPES.OPTICALIO])
 
-        ignoreOpticalIOs = False
-        if ignoreOpticalIOs and pinIOtype:
-            # Replace the Grating Coupler or Edge Coupler with a 0-length waveguide.
-            component1 = "ebeam_wg_strip_1550"
-            params1 = "wg_length=0u wg_width=0.500u"
-        else:
-            component1 = c.component
-            params1 = c.params
+        component1 = c.component
+        params1 = c.params
 
         text_subckt += ' %s %s %s ' % (component1.replace(' ', '_') +
                                        "_" + str(c.idx), nets_str, component1.replace(' ', '_'))
-        if c.library != None:
-            text_subckt += 'library="%s" ' % c.library
         x, y = c.Dcenter.x, c.Dcenter.y
         text_subckt += '%s lay_x=%s lay_y=%s\n' % \
             (params1, eng_str(x * 1e-6), eng_str(y * 1e-6))
 
-    text_subckt += '.ends %s\n\n' % (circuit_name)
-    return text_subckt, text_main
+    # text_subckt += '.ends %s\n\n' % (circuit_name)
+    return text_subckt
 
 pya.Cell.spice_netlist_export_ann = spice_netlist_export
 
@@ -258,8 +215,6 @@ model = wn.loadWaveguideNN(path)
 numInterpPoints = 2000
 
 interpRange = (1.88e+14, 1.99e+14)
-#interpRange = (1.93e+14, 1.99e+14)
-
 
 def strToSci(str):
     '''
@@ -408,18 +363,20 @@ class Cell():
         self.s = func(self.f)            
 
 
-    def wgSparam(self, width_in, thickness_in, deltaLength_in):
+    def wgSparam(self, width_in, thickness_in, deltaLength_in, frequency=None, length=None):
         '''
         Function that calculates the s-parameters for a waveguide using the ANN model
         Args:
             None
-            self.f (frequency array) and self.wglen (waveguide length) are used to calculate the s-parameters
+            frequency (frequency array) and length (waveguide length) are used to calculate the s-parameters
         Returns:
             None
             self.s becomes the s-matrix calculated by this function
         '''
+        frequency = self.f
+        length = self.wglen
 
-        mat = np.zeros((len(self.f),2,2), dtype=complex)        
+        mat = np.zeros((len(frequency),2,2), dtype=complex)        
         
         c0 = 299792458 #m/s
         width = width_in #0.5 #um
@@ -427,10 +384,10 @@ class Cell():
         mode = 0 #TE
         TE_loss = 700 #dB/m for width 500nm
         alpha = TE_loss/(20*np.log10(np.exp(1))) #assuming lossless waveguide
-        waveguideLength = self.wglen + (self.wglen * deltaLength_in)
+        waveguideLength = length + (length * deltaLength_in)
         
         #calculate wavelength
-        wl = np.true_divide(c0,self.f)
+        wl = np.true_divide(c0,frequency)
 
         # effective index is calculated by the ANN
         neff = wn.getWaveguideIndex(model,np.transpose(wl),width,thickness,mode)
@@ -445,23 +402,24 @@ class Cell():
         
 
     #calculate waveguide s-parameters based on SiEPIC's compact model
-    def wgSparamSiEPIC(self):
+    def wgSparamSiEPIC(self, width=None, thickness=None, deltaLength=None, frequency=None, length=None):
         '''
         Calculates waveguide s-parameters based on the SiEPIC compact model for waveguides
         Args:
             None
-            self.f (frequency array) and self.wglen (waveguide length) are used to calculate the s-parameters
+            frequency (frequency array) and self.wglen (waveguide length) are used to calculate the s-parameters
         Returns:
             None
             self.s becomes the s-matrix calculated by this function        
         '''
+        frequency = self.f
 
         #using file that assumes width 500nm and height 220nm
         filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "sparams/WaveGuideTETMStrip,w=500,h=220.txt")
         with open(filename, 'r') as f:#read info from waveguide s-param file
           coeffs = f.readline().split()
         
-        mat = np.zeros((len(self.f),2,2), dtype=complex) #initialize array to hold s-params
+        mat = np.zeros((len(frequency),2,2), dtype=complex) #initialize array to hold s-params
         
         c0 = 299792458 #m/s
 
@@ -469,7 +427,7 @@ class Cell():
         TE_loss = 700 #dB/m for width 500nm
         alpha = TE_loss/(20*np.log10(np.exp(1)))  
 
-        w = np.asarray(self.f) * 2 * np.pi #get angular frequency from frequency
+        w = np.asarray(frequency) * 2 * np.pi #get angular frequency from frequency
         lam0 = float(coeffs[0]) #center wavelength
         w0 = (2*np.pi*c0) / lam0 #center frequency (angular)
         
@@ -480,7 +438,7 @@ class Cell():
         #calculation of K
         K = 2*np.pi*ne/lam0 + (ng/c0)*(w - w0) - (nd*lam0**2/(4*np.pi*c0))*((w - w0)**2)
         
-        for x in range(0, len(self.f)): #build s-matrix from K and waveguide length
+        for x in range(0, len(frequency)): #build s-matrix from K and waveguide length
           mat[x,0,1] = mat[x,1,0] = np.exp(-alpha*self.wglen + (K[x]*self.wglen*1j))
         
         self.s = mat
