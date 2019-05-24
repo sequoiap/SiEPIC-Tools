@@ -5,6 +5,7 @@ import pya
 import os
 from SiEPIC.ann import netlist as cn
 import SiEPIC._globals as glob
+import json
 
 netname = 'netlist.txt'
 orig_cwd = os.getcwd()
@@ -16,12 +17,14 @@ def generateNetlist():
     # Get the current topcell from Klayout
     cell = pya.Application.instance().main_window().current_view().active_cellview().cell
     # Get the netlist from the cell
-    text_subckt = cell.spice_netlist_export_ann()
+    text_subckt, output = cell.spice_netlist_export_ann()
     #print(dir(cell))
     # Write the netlist to a temporary file
     fid = open(netname, 'w')
     fid.write(text_subckt)
     fid.close()
+    with open('netlist.json', 'w') as outfile:
+        json.dump(output, outfile, indent=2)
 
 
 def getSparams(width, thickness, lengthDelta):
