@@ -1,20 +1,33 @@
 import numpy as np
 import copy
 
+
 from SiEPIC.ann import getSparams as gs
 from SiEPIC.ann import NetlistDiagram
 from SiEPIC.ann import models
 
+from scipy.interpolate import interp1d
+
+class SimulationSetup:
+    NUM_INTERP_POINTS = 2000
+    INTERP_RANGE = (1.88e+14, 1.99e+14)
+    FREQUENCY_RANGE = np.linspace(INTERP_RANGE[0], INTERP_RANGE[1], NUM_INTERP_POINTS) 
+
+    @staticmethod
+    def interpolate(freq, sparams):
+        func = interp1d(freq, sparams, kind='cubic', axis=0)
+        return [SimulationSetup.FREQUENCY_RANGE, func(SimulationSetup.FREQUENCY_RANGE)]
 
 
 
-def get_wg_s_params(**kwargs):
-    wg_model.get_s_params(**kwargs)
 
 class MathPrefixes:
     TERA = 1e12
     NANO = 1e-9
     c = 299792458
+
+
+
 
 class Simulation:
     def __init__(self):
@@ -25,7 +38,6 @@ class Simulation:
         # Get s parameters and frequencies (generates the netlist, too).
         self.s_matrix, self.frequency = gs.getSparams(waveguideWidth, waveguideThickness, waveguideLengthDelta)
         self.ports = gs.getPorts(waveguideWidth, waveguideThickness, waveguideLengthDelta)
-
         self.external_port_list, self.external_components = NetlistDiagram.getExternalPortList()
         self._rearrangeSMatrix()
         return
