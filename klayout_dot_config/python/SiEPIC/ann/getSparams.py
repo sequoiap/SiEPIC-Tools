@@ -20,9 +20,8 @@ def generateNetlist():
     text_subckt, output = cell.spice_netlist_export_ann()
     #print(dir(cell))
     # Write the netlist to a temporary file
-    fid = open(netname, 'w')
-    fid.write(text_subckt)
-    fid.close()
+    with open(netname, 'w') as fid:
+        fid.write(text_subckt)
     with open('netlist.json', 'w') as outfile:
         json.dump(output, outfile, indent=2)
 
