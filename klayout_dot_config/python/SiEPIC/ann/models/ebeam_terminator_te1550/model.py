@@ -7,7 +7,7 @@ class Model:
 
     @staticmethod
     def get_s_params(numports: int):
-        """Returns the s-parameters across some frequency range for the ebeam_bdc_te1550 model
+        """Returns the s-parameters across some frequency range for the ebeam_terminator_te1550 model
         in the form [frequency, s-parameters].
 
         Parameters
@@ -15,7 +15,7 @@ class Model:
         numports : int
             The number of ports the photonic component has.
         """
-        filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "EBeam_1550_TE_BDC.sparam")
+        filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "nanotaper_w1=500,w2=60,L=10_TE.sparam")
         F = []
         S = []
         with open(filename, "r") as fid:
@@ -43,10 +43,8 @@ class Model:
                             break
         return [F, S]
 
-
-
     @staticmethod
     def about():
-        message = "About ebeam_bdc_te1550:"
+        message = "About ebeam_terminator_te1550:"
         print(message)
 

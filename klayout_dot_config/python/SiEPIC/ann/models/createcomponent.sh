@@ -5,7 +5,14 @@ echo "Type the new component's name, followed by [ENTER]: "
 
 read module
 
-mkdir $module
+if [ ! -d $module ]
+then
+    mkdir $module
+else
+    echo "'$module' already exists!"
+    exit 1
+fi
+
 cd $module
 
 touch __init__.py
