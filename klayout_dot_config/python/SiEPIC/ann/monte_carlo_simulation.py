@@ -87,7 +87,7 @@ class MonteCarloGUI(tk.Tk):
         self.mean_length.grid(row=2, column=1)
         self.mean_length.insert(0, str(DEF_MU_LENGTH))
 
-        io_group = tk.LabelFrame(bbox, text="I/O", padx=padx, pady=pady)
+        io_group = tk.LabelFrame(bbox, text="I/O (0-indexed)", padx=padx, pady=pady)
         io_group.pack(fill=tk.BOTH, expand=1)
         tk.Label(io_group, text="Input port:").grid(row=0, column=0)
         self.in_port = tk.Entry(io_group)

@@ -111,7 +111,7 @@ import matplotlib.pyplot as plt
 from scipy.io import savemat
 import time
 
-class MCSimulation(Simulation):
+class MCSimulation:
     def __init__(self):
         pass
 
@@ -143,72 +143,83 @@ def monte_carlo_sim(num_sims=DEF_NUM_SIMS,
                     printer=None):
     printer("Monte Carlo Simulation")
 
-#     # optional timer
-#     start = time.time()
+    # optional timer
+    start = time.time()
 
-#     # random distribution for width
-#     random_width = np.random.normal(mu_width, sigma_width, num_sims)
+    # random distribution for width
+    random_width = np.random.normal(mu_width, sigma_width, num_sims)
 
-#     # random distribution for thickness
-#     random_thickness = np.random.normal(mu_thickness, sigma_thickness, num_sims)
+    # random distribution for thickness
+    random_thickness = np.random.normal(mu_thickness, sigma_thickness, num_sims)
 
-#     # random distribution for length change
-#     random_deltaLength = np.random.normal(mu_length, sigma_length, num_sims)
+    # random distribution for length change
+    random_deltaLength = np.random.normal(mu_length, sigma_length, num_sims)
 
-#     # run simulation with mean width and thickness
-#     mean_s, frequency = gs.getSparams(mu_width, mu_thickness, 0)
-#     results_shape = np.append(np.asarray([num_sims]), mean_s.shape)
-#     results = np.zeros([dim for dim in results_shape], dtype='complex128')
+    # printer(str(random_width) + " " + str(random_thickness) + " " + str(random_deltaLength))
 
-#     # run simulations with varied width and thickness
-#     for sim in range(num_sims):
-#         #random_deltaLength[sim]
-#         results[sim, :, :, :] = gs.getSparams(random_width[sim], random_thickness[sim], random_deltaLength[sim])[0]
-#         if ((sim % 10) == 0) and dispTime:
-#             print(sim)
+    cell = pya.Application.instance().main_window().current_view().active_cellview().cell
+    _, _, ann_netlist_model = cell.spice_netlist_export_ann()
+
+    # run simulation with mean width and thickness
+    mean_s, frequency, _, _ = netlist.get_sparameters(ann_netlist_model) 
+    # mean_s, frequency = gs.getSparams(mu_width, mu_thickness, 0)
+    results_shape = np.append(np.asarray([num_sims]), mean_s.shape)
+    results = np.zeros([dim for dim in results_shape], dtype='complex128')
+
+    # run simulations with varied width and thickness
+    for sim in range(num_sims):
+        modified_netlist = copy.deepcopy(ann_netlist_model)
+        for component in modified_netlist.component_list:
+            if component.__class__.__name__ == "ebeam_wg_integral_1550":
+                component.width = random_width[sim]
+                component.height = random_thickness[sim]
+                # Implement length monte carlo
+        #random_deltaLength[sim]
+        s, _, p, _ = netlist.get_sparameters(modified_netlist)
+        results[sim, :, :, :] = s
+        if ((sim % 10) == 0) and dispTime:
+            print(sim)
 
 #     # rearrange matrix so matrix indices line up with proper port numbers
-#     p = gs.getPorts(random_width[0], random_thickness[0], 0)
-#     p = [int(i) for i in p]
-#     rp = copy.deepcopy(p)
-#     rp.sort(reverse=True)
-#     # TODO: Remove this duplicate code. It's been implemented once in the Simulation.py class
-#     concatinate_order = [p.index(i) for i in rp]
-#     temp_res = copy.deepcopy(results)
-#     temp_mean = copy.deepcopy(mean_s)
-#     re_res = np.zeros(results_shape, dtype=complex)
-#     re_mean = np.zeros(mean_s.shape, dtype=complex)
-#     i=0
-#     for idx in concatinate_order:
-#         re_res[:,:,i,:]  = temp_res[:,:,idx,:]
-#         re_mean[:,i,:] = temp_mean[:,idx,:]
-#         i += 1
-#     temp_res = copy.deepcopy(re_res)
-#     temp_mean = copy.deepcopy(re_mean)
-#     i=0
-#     for idx in concatinate_order:
-#         re_res[:,:,:,i] = temp_res[:,:,:,idx]
-#         re_mean[:,:,i] = temp_mean[:,:,idx]
-#         i+= 1    
-#     results = copy.deepcopy(re_res)
-#     mean_s = copy.deepcopy(re_mean)
+    p = [int(i) for i in p]
+    rp = copy.deepcopy(p)
+    rp.sort(reverse=True)
+    concatenate_order = [p.index(i) for i in rp]
+    temp_res = copy.deepcopy(results)
+    temp_mean = copy.deepcopy(mean_s)
+    re_res = np.zeros(results_shape, dtype=complex)
+    re_mean = np.zeros(mean_s.shape, dtype=complex)
+    i=0
+    for idx in concatenate_order:
+        re_res[:,:,i,:]  = temp_res[:,:,idx,:]
+        re_mean[:,i,:] = temp_mean[:,idx,:]
+        i += 1
+    temp_res = copy.deepcopy(re_res)
+    temp_mean = copy.deepcopy(re_mean)
+    i=0
+    for idx in concatenate_order:
+        re_res[:,:,:,i] = temp_res[:,:,:,idx]
+        re_mean[:,:,i] = temp_mean[:,:,idx]
+        i+= 1    
+    results = copy.deepcopy(re_res)
+    mean_s = copy.deepcopy(re_mean)
 
-#     # print elapsed time if dispTime is True
-#     stop = time.time()
-#     if dispTime and printer:
-#         printer('Total simulation time: ' + str(stop-start) + ' seconds')
+    # print elapsed time if dispTime is True
+    stop = time.time()
+    if dispTime and printer:
+        printer('Total simulation time: ' + str(stop-start) + ' seconds')
 
-#     # save MC simulation results to matlab file
-#     if saveData == True:
-#         savemat(filename, {'freq':frequency, 'results':results, 'mean':mean_s})
+    # save MC simulation results to matlab file
+    if saveData == True:
+        savemat(filename, {'freq':frequency, 'results':results, 'mean':mean_s})
 
-#     plt.figure(1)
-#     for i in range(num_sims):
-#         plt.plot(frequency, 10*np.log10(abs(results[i, :, dpin, dpout])**2), 'b', alpha=0.1)
-#     plt.plot(frequency,  10*np.log10(abs(mean_s[:, dpin, dpout])**2), 'k', linewidth=0.5)
-#     title = 'Monte Carlo Simulation (' + str(num_sims) + ' Runs)'
-#     plt.title(title)
-#     plt.xlabel('Frequency (Hz)')
-#     plt.ylabel('Gain (dB)')
-#     plt.draw()
-#     plt.show()
+    plt.figure(1)
+    for i in range(num_sims):
+        plt.plot(frequency, 10*np.log10(abs(results[i, :, dpin, dpout])**2), 'b', alpha=0.1)
+    plt.plot(frequency,  10*np.log10(abs(mean_s[:, dpin, dpout])**2), 'k', linewidth=0.5)
+    title = 'Monte Carlo Simulation (' + str(num_sims) + ' Runs)'
+    plt.title(title)
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel('Gain (dB)')
+    plt.draw()
+    plt.show()
