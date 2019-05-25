@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from SiEPIC.ann import waveguideNN as wn
+from SiEPIC.ann.models.wg_ann import waveguideNN as wn
 
 path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "NN_SiO2_neff.h5")
 model = wn.loadWaveguideNN(path)
