@@ -205,8 +205,31 @@ class ebeam_wg_integral_1550(Component):
         if 'points' in kwargs:
             self.points = kwargs.get('points')
 
-    def get_s_params(self, delta_length=0):
-        return self._model_ref.get_s_params(simset.FREQUENCY_RANGE, self.length, self.width, self.height, delta_length)
+    def get_s_params(self, length=None, width=None, height=None, delta_length=0):
+        """
+        Gets the s-parameter matrix for this component.
+
+        Parameters
+        ----------
+        length : float, optional
+            Length of the waveguide.
+        width : float, optional
+            Width of the waveguide in microns (um).
+        height : float, optional
+            Height of the waveguide in microns (um).
+        delta_length :  : float, optional
+            Percentage difference in the length of the waveguide as a float (e.g. '0.1' -> 10%).
+
+        Returns
+        -------
+        (np.array, np.array)
+            A tuple; the first value is the frequency range, the second value is its
+            corresponding s-parameter matrix.
+        """
+        length = self.length if length is None else length
+        width = self.width if width is None else width
+        height = self.height if height is None else height
+        return self._model_ref.get_s_params(simset.FREQUENCY_RANGE, length, width, height, delta_length)
 
 
 
