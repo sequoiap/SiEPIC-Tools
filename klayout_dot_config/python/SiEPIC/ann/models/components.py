@@ -178,8 +178,8 @@ class ebeam_wg_integral_1550(Component):
     points: list = []
 
     _simulation_models = {
-        # 'ANN Waveguide': 'wg_ann',
-        'EBeam Waveguide': 'wg1550_lumerical',
+        'ANN Waveguide': 'wg_ann',
+        # 'EBeam Waveguide': 'wg1550_lumerical',
     }
 
     def __init__(self, *args, **kwargs):
