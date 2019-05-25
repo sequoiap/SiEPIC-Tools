@@ -7,14 +7,10 @@ Modified on 5/23/2019
 Dependencies:
 - importlib
     Dynamically imports the installed component models.
-- jsons
-    Similar to GSON in Java, serializes and deserializes custom models.
-    API: https://jsons.readthedocs.io/en/latest/index.html
-- json
-    Allows for writing and reading from JSON files.
 
-This file loads all components within the models package. It also provides 
-netlist capabilities, formatting all components as JSON.
+This file dynamically loads all installed components within the models package. 
+It also provides object models for netlist capabilities, and all components 
+can be formatted as JSON.
 """
 
 
@@ -38,7 +34,6 @@ BEGIN DO NOT ALTER
 """
 import sys
 from importlib import import_module
-import jsons
 import json
 
 LOADED_MODELS = {}
@@ -58,6 +53,7 @@ from SiEPIC.ann.simulation import SimulationSetup as simset
 """
 END DO NOT ALTER
 """
+
 class Component(ABC):
     """This class represents an arbitrary component in the netlist. All attributes can
     be initialized as keyword arguments in the __init__ function.
@@ -74,7 +70,7 @@ class Component(ABC):
     _simulation_models : dict
         A dictionary of installed models (packages) from which this component could 
         retrieve s-parameters. This is a class attribute, and is not stored at the instance 
-        level or in JSON output. It's format is {'[Human Readable Name]': '[Model Location]'}.
+        level. It's format is {'[Human Readable Name]': '[Model Location]'}.
     _selected_model : str
         A key from the _simulation_models dictionary.
     _model_ref : class
@@ -392,23 +388,3 @@ for class_ in comp_subclasses:
 
 def create_component_by_name(component_name: str):
     return getattr(sys.modules[__name__], component_name)()
-
-
-import os
-if __name__ == "__main__":
-    # w1 = ebeam_wg_integral_1550(length=50e-6, width=500.05129e-9, height=220)
-    # w2 = ebeam_wg_integral_1550(nets=[2,3], length=150e-6, width=499.5129e-9, height=220)
-    # items = []
-    # items.append(w1)
-    # items.append(w2)
-    # output = jsons.dump(items, verbose=True, strip_privates=True)
-    # with open('data.json', 'w') as outfile:
-    #     json.dump(output, outfile, indent=2)
-    # data = None
-    # with open('data.json') as jsonfile:
-    #     data = json.load(jsonfile)
-    # inputstr = jsons.load(data)
-    # # os.remove('data.json')
-    # LOADED_MODELS[ebeam_wg_integral_1550._simulation_models['EBeam Waveguide']].about()
-    bdc = ebeam_bdc_te1550(nets=[0, 1], lay_x=0, lay_y=0)
-    f, s = bdc.get_s_params()

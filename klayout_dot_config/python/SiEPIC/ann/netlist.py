@@ -17,8 +17,10 @@ Dependencies:
 - SiEPIC.core
     Required by the custom netlist generator
 - jsons
+    Similar to GSON in Java, serializes and deserializes custom models.
     Required to convert the ObjectModelNetlist to a file that can be saved and 
     read later.
+    API: https://jsons.readthedocs.io/en/latest/index.html
 - copy
 - skrf
 
@@ -170,6 +172,17 @@ class ObjectModelNetlist:
 
     def get_external_components(self):
         return [component for component in self.component_list if (any(int(x) < 0 for x in component.nets))]
+
+    @property
+    def json(self) -> str:
+        return jsons.dump(self.component_list, verbose=True, strip_privates=True)
+        # And, in case we ever want to build in a netlist export function,
+        # here's the necessary code:
+        # with open('data.json', 'w') as outfile:
+        #     json.dump(output, outfile, indent=2)
+        # with open('data.json') as jsonfile:
+        #     data = json.load(jsonfile)
+        # inputstr = jsons.load(data)
 
 
 def spice_netlist_export(self) -> (str, str):
