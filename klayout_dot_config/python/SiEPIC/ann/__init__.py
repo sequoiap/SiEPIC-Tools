@@ -5,14 +5,9 @@ as an alternative to Lumerical's INTERCONNECT. It is speedy and easily extensibl
 """
 
 __all__ = [
-    'loadNN',
     'netlist',
-    'waveguideNN',
-    'getSparams',
-    'NetlistDiagram',
     'circuit_simulation',
     'simulation',
-    'model',
     'monte_carlo_simulation',
     'models',
 ]
