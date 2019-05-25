@@ -1,13 +1,16 @@
 """
-Tkinter Graph Wrapper
+graph.py : Tkinter Graph Wrapper
 
-This module allows tkinter graphs to be easily created from a parent tkinter object
-in their own separate windows.
+Author: 
+    Sequoia Ploeg
 
 Dependencies:
-    - tkinter
-    - matplotlib
-    - numpy
+- tkinter
+- matplotlib
+- numpy
+
+This module allows tkinter graphs to be easily created from a parent tkinter 
+object in their own separate windows.
 """
 
 import tkinter as tk
@@ -22,11 +25,14 @@ import os # For filedialog to start in user's /~ instead of /.
 
 
 class ListSelectDeleteDialog:
-    """Opens a dialog window presenting a list of items passed in as a parameter.
+    """Opens a dialog window presenting a list of items passed in as a 
+    parameter.
 
-    Delete button removes items from the list. Deleted items are the return value.
+    Delete button removes items from the list. Deleted items are the return 
+    value.
 
-    Usage: ListSelectDeleteDialog(master: tk.Toplevel).askdeletelist(startlist: list)
+    Usage: 
+    ListSelectDeleteDialog(master: tk.Toplevel).askdeletelist(startlist: list)
     """
 
     def __init__(self, master: tk.Toplevel):
@@ -73,12 +79,14 @@ class ListSelectDeleteDialog:
 
 
 class ListSelectRenameDialog:
-    """Opens a dialog window presenting a list of items passed in as a parameter.
+    """Opens a dialog window presenting a list of items passed in as a 
+    parameter.
 
-    Rename button opens a text dialog to rename an item from the list. Returns a tuple, the original name
-    and the new name.
+    Rename button opens a text dialog to rename an item from the list. Returns
+    a tuple: the original name and the new name.
 
-    Usage: ListSelectRenameDialog(master: tk.Toplevel).askrenamelist(startlist: list)
+    Usage: 
+    ListSelectRenameDialog(master: tk.Toplevel).askrenamelist(startlist: list)
     """
 
     def __init__(self, master: tk.Toplevel):
@@ -129,8 +137,9 @@ class MenuItem:
 
 class MenuGroup:
     """
-    TODO: Implement such that classing importing graph don't have to create their own dictionaries
-    but can just create a MenuGroup and pass that in to the Graph.
+    TODO: Implement such that classing importing graph don't have to create 
+    their own dictionaries but can just create a MenuGroup and pass that in to
+    the Graph.
     """
 
     def __init__(self):
@@ -141,25 +150,29 @@ class MenuGroup:
 
 class DataSet:
     """
-    The DataSet class is used to allow the Graph to conveniently store and access multiple lines.
+    The DataSet class is used to allow the Graph to conveniently store and 
+    access multiple lines.
 
     This class is not intended to be used by any other class besides Graph.
-    Stored within the DataSet class is the xdata, the ydata, and an optional name.
-    Graph generates a DataSet object when xdata, ydata, and an optional name is passed to its
-    plot function. Upon graphing the object, it stores a reference to the axis line object.
-    Graph stores a list of DataSet objects. In this way, it can iterate through all the axis
-    line objects to delete or otherwise modify them.
+    Stored within the DataSet class is the xdata, the ydata, and an optional 
+    name. Graph generates a DataSet object when xdata, ydata, and an optional 
+    name is passed to its plot function. Upon graphing the object, it stores a
+    reference to the axis line object. Graph stores a list of DataSet objects.
+    In this way, it can iterate through all the axis line objects to delete or 
+    otherwise modify them.
     """
 
     def __init__(self, x: np.array, y: np.array, name: str = None):
-        """Stores the x and y values of the plot, as well as an (optional) name for the DataSet"""
+        """Stores the x and y values of the plot, as well as an (optional) 
+        name for the DataSet"""
 
         self.x = x
         self.y = y
         self.name = name
 
     def setObjectID(self, id):
-        """The objectID member is intended to hold a reference to a matplotlib Axes line."""
+        """The objectID member is intended to hold a reference to a matplotlib
+        Axes line."""
 
         self.objectID = id[0]
 
@@ -197,23 +210,28 @@ class Graph:
     toolbar: matplotlib.backends.backend_tkagg.NavigationToolbar2Tk
         The matplotlib toolbar object contained within Graph.
     ax : matplotlib.axes.Axes
-        The matplotlib axis upon which line and legend operations are performed.
+        The matplotlib axis upon which line and legend operations are 
+        performed.
     hasLegend : tk.BooleanVar
-        A state variable used to maintain the legend's existence state between graph updates (default is false)
+        A state variable used to maintain the legend's existence state between
+        graph updates (default is false)
     lines : DataSet[]
-        A list of DataSet objects containing the data points and their formal names.
+        A list of DataSet objects containing the data points and their formal 
+        names.
     line_counter : int
-        An autoincrementing counter to assign numeric names to lines plotted without a specified name.
+        An autoincrementing counter to assign numeric names to lines plotted 
+        without a specified name.
 
     Methods
     -------
     plot(x=None, y=None, name=None)
         Plots x and y data on a Graph.
     clear(value)
-        Deletes a stored DataSet value from the graph's self.lines DataSet objects list and removes 
-        its line and legend from the plot.
+        Deletes a stored DataSet value from the graph's self.lines DataSet 
+        objects list and removes its line and legend from the plot.
     legend(include=None)
-        Updates the legend's values and maintains its state. Can be used to activate/deactivate the legend.
+        Updates the legend's values and maintains its state. Can be used to 
+        activate/deactivate the legend.
     linewidth(size)
         Changes the linewidth of all plotted lines.
     title(title)
@@ -256,14 +274,16 @@ class Graph:
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
         self.canvas.mpl_connect("key_press_event", self.on_key_press)
         
-        # Setup the plot area, stored lines, and setup the menu now that all variables exist.
+        # Setup the plot area, stored lines, and setup the menu now that all 
+        # variables exist.
         self.reset()
         self.init_menu(additional_menus=additional_menus)
         self.master.config(menu=self.menubar)
         self.onCloseCallback = onCloseCallback
 
     def reset(self):
-        """Clears the figure, adds a new axis, resets the title, and clears all stored DataSet lines."""
+        """Clears the figure, adds a new axis, resets the title, and clears all
+        stored DataSet lines."""
 
         self.fig.clear()
         self.ax = self.fig.add_subplot(111)
@@ -328,8 +348,9 @@ class Graph:
         insertmenu.add_checkbutton(label="Legend", onvalue=True, offvalue=False, variable=self.hasLegend, command=self.legend)
         self.menubar.add_cascade(label="Insert", menu=insertmenu)
 
-        # An "additional_menu" is a dictionary where each key is the name of the cascade
-        # to be added, and its corresponding value is a list of MenuItem objects (each as a name and a callback function).
+        # An "additional_menu" is a dictionary where each key is the name of 
+        # the cascade to be added, and its corresponding value is a list of 
+        # MenuItem objects (each as a name and a callback function).
         if additional_menus != None:
             for cascade in additional_menus:
                 cascade_menu = tk.Menu(self.menubar, tearoff=0)
@@ -421,12 +442,14 @@ class Graph:
             self.title(label)
 
     def on_key_press(self, event):
-        """Registers a key press event (default matplotlib keybindings are implemented).
+        """Registers a key press event (default matplotlib keybindings are 
+        implemented).
 
         Parameters
         ----------
         event : Event
-            An event like a key press that is passed to the matplotlib key press handler.
+            An event like a key press that is passed to the matplotlib key 
+            press handler.
         """
 
         #print("you pressed {}".format(event.key))
@@ -453,8 +476,9 @@ class Graph:
         y : np.array
             The y axis values
         name : str, optional
-            The name for this line (default = None). Line names are required to be unique, and
-            Graph raises a ValueError if the unique name constraint is not satisfied.
+            The name for this line (default = None). Line names are required 
+            to be unique, and Graph raises a ValueError if the unique name 
+            constraint is not satisfied.
 
         Raises
         ------
@@ -480,17 +504,17 @@ class Graph:
 
     # Much help derived from https://stackoverflow.com/questions/4981815/how-to-remove-lines-in-a-matplotlib-plot
     def clear(self, value=None):
-        """Deletes a stored DataSet value from the graph's self.lines DataSet objects list and removes 
-        its line and legend from the plot.
+        """Deletes a stored DataSet value from the graph's self.lines DataSet 
+        objects list and removes its line and legend from the plot.
 
-        The user should take care to make DataSet names unique, as Graph will raise a value error if attempts
-        are made to plot a duplicate.
+        The user should take care to make DataSet names unique, as Graph will 
+        raise a value error if attempts are made to plot a duplicate.
 
         Parameters
         ----------
         value : str
-            The line with the specified name is deleted (no effect if it doesn't exist).
-            If None, all lines are cleared from the graph.
+            The line with the specified name is deleted (no effect if it 
+            doesn't exist). If None, all lines are cleared from the graph.
         """
 
         if value is not None:
@@ -511,7 +535,8 @@ class Graph:
         Parameters
         ----------
         include : bool, optional
-            If not specified, default behavior is to maintain the legend's present state (self.hasLegend).
+            If not specified, default behavior is to maintain the legend's 
+            present state (self.hasLegend).
             If true, a draggable legend is placed onto the Graph.
             If false, the legend is turned off.
         """

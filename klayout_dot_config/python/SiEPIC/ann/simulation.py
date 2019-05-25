@@ -1,12 +1,30 @@
-import numpy as np
-import copy
+"""
+simulation.py
+
+Authors: 
+    Sequoia Ploeg
+    Hyrum Gunther
+
+Dependencies:
+- numpy
+- copy
+- pya
+- SiEPIC.ann.models, SiEPIC.ann.netlist
+- scipy
+- matplotlib
+- time
+
+This file contains all classes and functions related to running simulations
+of photonic circuits and formatting their data in useful ways.
+"""
 
 import pya
+import numpy as np
+import copy
+from scipy.interpolate import interp1d
 
 from SiEPIC.ann import models
 from SiEPIC.ann import netlist
-
-from scipy.interpolate import interp1d
 
 class SimulationSetup:
     NUM_INTERP_POINTS = 2000
@@ -31,10 +49,6 @@ class MathPrefixes:
 
 class Simulation:
     def __init__(self):
-        # parameters for generating waveguide s parameters
-        waveguideWidth = 0.5
-        waveguideThickness = 0.22
-        waveguideLengthDelta = 0
         # Get s parameters and frequencies (generates the netlist, too).
         cell = pya.Application.instance().main_window().current_view().active_cellview().cell
         _, _, ann_netlist_model = cell.spice_netlist_export_ann()
@@ -97,6 +111,10 @@ import matplotlib.pyplot as plt
 from scipy.io import savemat
 import time
 
+class MCSimulation(Simulation):
+    def __init__(self):
+        pass
+
 DEF_NUM_SIMS = 10
 DEF_MU_WIDTH = 0.5
 DEF_SIGMA_WIDTH = 0.005
@@ -110,11 +128,20 @@ DEF_SAVEDATA = True
 DEF_DISPTIME = True
 DEF_FILENAME = "monte_carlo.mat"
 
-def monte_carlo_sim(num_sims=DEF_NUM_SIMS, mu_width=DEF_MU_WIDTH, sigma_width=DEF_SIGMA_WIDTH, mu_thickness=DEF_MU_THICKNESS,
-    sigma_thickness=DEF_SIGMA_THICKNESS, mu_length=DEF_MU_LENGTH, sigma_length=DEF_SIGMA_LENGTH, dpin=DEF_DPIN, dpout=DEF_DPOUT, 
-    saveData=False, filename=None, dispTime=False, printer=None):
-
-    pass
+def monte_carlo_sim(num_sims=DEF_NUM_SIMS, 
+                    mu_width=DEF_MU_WIDTH, 
+                    sigma_width=DEF_SIGMA_WIDTH, 
+                    mu_thickness=DEF_MU_THICKNESS,
+                    sigma_thickness=DEF_SIGMA_THICKNESS, 
+                    mu_length=DEF_MU_LENGTH, 
+                    sigma_length=DEF_SIGMA_LENGTH, 
+                    dpin=DEF_DPIN, 
+                    dpout=DEF_DPOUT, 
+                    saveData=False, 
+                    filename=None, 
+                    dispTime=False, 
+                    printer=None):
+    printer("Monte Carlo Simulation")
 
 #     # optional timer
 #     start = time.time()

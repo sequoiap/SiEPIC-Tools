@@ -1,3 +1,23 @@
+"""
+circuit_simulation.py
+
+Author:
+    Sequoia Ploeg
+
+Dependencies:
+- tkinter
+- SiEPIC._globals
+- SiEPIC.ann.graph, SiEPIC.ann.simulation
+- scipy
+- numpy
+- os
+- matplotlib
+
+This file mainly provides the GUI for running simulations. It creates a 
+Simulation object, runs it, and provides controls and windows for displaying
+and exporting the results.
+"""
+
 import tkinter as tk
 from tkinter import filedialog
 

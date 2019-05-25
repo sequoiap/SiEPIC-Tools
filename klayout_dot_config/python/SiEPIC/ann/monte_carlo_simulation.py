@@ -1,3 +1,19 @@
+"""
+monte_carlo_simulation.py
+
+Author:
+    Sequoia Ploeg
+
+Dependencies:
+- tkinter
+- SiEPIC.ann.simulation
+- os
+
+This file mainly provides the GUI for running monte carlo simulations. It 
+creates a MCSimulation object and runs it, provides various parameters from its
+GUI. Presently, the MCSimulation object handles displaying the results itself.
+"""
+
 import os
 import tkinter as tk
 from tkinter import filedialog

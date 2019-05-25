@@ -1,7 +1,8 @@
 """Artificial Neural Network (ANN) SiEPIC Toolbox Extension
 
-This module implements a free and open source photonic integrated circuit (PIC) simulation engine
-as an alternative to Lumerical's INTERCONNECT. It is speedy and easily extensible.
+This module implements a free and open source photonic integrated circuit (PIC)
+simulation engine as an alternative to Lumerical's INTERCONNECT. It is speedy 
+and easily extensible.
 """
 
 __all__ = [
