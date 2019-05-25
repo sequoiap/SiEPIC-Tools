@@ -1,18 +1,8 @@
-import pya
-import sys
 import os
-import numpy as np
-import copy
-import matplotlib.pyplot as plt
-from scipy.stats import kde
-from SiEPIC.ann import getSparams as gs
-from SiEPIC.ann.simulation import monte_carlo_sim
-from scipy.io import savemat
-from scipy.signal import find_peaks
-import time
-
 import tkinter as tk
 from tkinter import filedialog
+
+from SiEPIC.ann.simulation import monte_carlo_sim
 
 DEF_NUM_SIMS = 10
 DEF_MU_WIDTH = 0.5

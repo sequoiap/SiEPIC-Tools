@@ -168,6 +168,9 @@ class ObjectModelNetlist:
         component.nets = nets
         self.component_list.append(component)
 
+    def get_external_components(self):
+        return [component for component in self.component_list if (any(int(x) < 0 for x in component.nets))]
+
 
 def spice_netlist_export(self) -> (str, str):
     """
@@ -289,7 +292,7 @@ class ComponentSimulation:
 
     Attributes
     ----------
-    nets : list
+    nets : list(str)
         An ordered list of the nets connected to the Component
     f : np.array
         A numpy array of the frequency values in its simulation.
@@ -358,7 +361,7 @@ def connect_circuit(netlist: ObjectModelNetlist) -> ComponentSimulation:
                 del component_list[cb]
             component_list.append(combination)
 
-    return component_list[0]
+    return component_list[0], netlist.get_external_components()
 
 
 def strToSci(number) -> float:
@@ -401,9 +404,13 @@ def get_sparameters(netlist: ObjectModelNetlist):
     -------
     np.array, np.array, list(str)
         A tuple in the following order: ([s-matrix], [frequency array], [external port list])
+        - s-matrix: The s-parameter matrix of the combined component.
+        - frequency array: The corresponding frequency array, indexed the same as the s-matrix.
+        - external port list: Strings of negative numbers representing the ports of the combined
+            component. They are indexed in the same order as the columns/rows of the s-matrix.
     """
-    combined = connect_circuit(netlist)
+    combined, edge_components = connect_circuit(netlist)
     f = combined.f
     s = combined.s
     externals = combined.nets
-    return (s, f, externals)
+    return (s, f, externals, edge_components)

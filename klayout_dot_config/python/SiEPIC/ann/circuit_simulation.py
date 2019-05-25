@@ -122,9 +122,9 @@ class CircuitAnalysisGUI():
 
     def draw(self):
         for comp in self.components:
-            self.ax.plot(comp.posx, comp.posy, 'ro')
-            externals = [x for x in comp.ports if x < 0 ]
-            self.ax.text(comp.posx, comp.posy, "  Port " + str(-externals[0]) + ": " + comp.label)
+            self.ax.plot(comp.lay_x, comp.lay_y, 'ro')
+            externals = [int(x) for x in comp.nets if int(x) < 0 ]
+            self.ax.text(comp.lay_x, comp.lay_y, "  Port " + str(-externals[0]) + ": " + comp.__class__.__name__)
         self.ax.axis('off')
         self.canvas.draw()
 
