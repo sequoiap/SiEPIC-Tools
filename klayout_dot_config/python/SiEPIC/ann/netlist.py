@@ -143,6 +143,8 @@ class ObjectModelNetlist:
             delimiter).
         """
 
+        # TODO: Consider having each component parse its own line, rather than
+        # needing to add more case statements if new parameters show up.
         component = None
         nets = []
         for item in line_elements[1:]:

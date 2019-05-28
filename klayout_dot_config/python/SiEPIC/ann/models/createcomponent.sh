@@ -1,3 +1,11 @@
+#! /bin/bash
+#
+# Author: Sequoia Ploeg
+#
+# Purpose: Initialize the folders and files required for a new component
+# module. Automatically writes __init__.py and also provides a stubbed
+# class with functions for the component.
+
 echo "Component Creation Wizard"
 echo "-------------------------"
 echo "Welcome!"

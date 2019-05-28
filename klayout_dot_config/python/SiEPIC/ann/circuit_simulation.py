@@ -126,8 +126,9 @@ class CircuitAnalysisGUI():
 
     def generate_schematic(self):
         """
-        This function creates a figure object and places it within the schematic slot in the parent
-        tkinter window. It then calls 'draw' to plot the layout points on the canvas.
+        This function creates a figure object and places it within the 
+        schematic slot in the parent tkinter window. It then calls 'draw' to 
+        plot the layout points on the canvas.
         """
         # The only real objects we'll need to interact with to plot and unplot
         self.components = self.simulation.external_components

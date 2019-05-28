@@ -2,22 +2,25 @@
 components.py
 
 Author: Sequoia Ploeg
-Modified on 5/23/2019
 
 Dependencies:
+- sys
+    Required for building classes from various modules using their string
+    classnames.
 - importlib
     Dynamically imports the installed component models.
 
-This file dynamically loads all installed components within the models package. 
-It also provides object models for netlist capabilities, and all components 
-can be formatted as JSON.
+This file dynamically loads all installed components within the models package.
+It also provides object models for netlist capabilities (all components 
+can be formatted as JSON).
 """
 
 
 """
-This is where you should list all installed components from which you plan to get 
-s-parameters. In addition to listing the modules here, make sure to list the 
-relevant modules within each component class below, too, under _simulation_model.
+This is where you should list all installed components from which you plan to 
+get s-parameters. In addition to listing the modules here, make sure to list 
+the relevant modules within each component class below, too, under 
+_simulation_model.
 """
 INSTALLED_COMPONENTS = [
     'wg_ann',
@@ -34,7 +37,6 @@ BEGIN DO NOT ALTER
 """
 import sys
 from importlib import import_module
-import json
 
 LOADED_MODELS = {}
 
@@ -55,50 +57,55 @@ END DO NOT ALTER
 """
 
 class Component(ABC):
-    """This class represents an arbitrary component in the netlist. All attributes can
-    be initialized as keyword arguments in the __init__ function.
+    """This class represents an arbitrary component in the netlist. All 
+    attributes can be initialized as keyword arguments in the __init__ 
+    function.
 
-    This is the abstract base class for all netlist components. All components have a type, a
-    list of nets, x/y layout positions, and a list of simulation models from which the
-    component in question could retrieve s-parameters.
+    This is the abstract base class for all netlist components. All components
+    have a type, a list of nets, x/y layout positions, and a list of simulation
+    models from which the component in question could retrieve s-parameters.
 
-    All class extensions should provide additional data members with type hints and 
-    default values if necessary.
+    All class extensions should provide additional data members with type hints
+    and default values if necessary.
 
     Class Attributes
     ----------------
     _simulation_models : dict
-        A dictionary of installed models (packages) from which this component could 
-        retrieve s-parameters. This is a class attribute, and is not stored at the instance 
-        level. It's format is {'[Human Readable Name]': '[Model Location]'}.
+        A dictionary of installed models (packages) from which this component 
+        could retrieve s-parameters. This is a class attribute, and is not 
+        stored at the instance level. It's format ought to be as follows:
+        {'[Human Readable Name]': '[Module Name]'}.
     _selected_model : str
         A key from the _simulation_models dictionary.
     _model_ref : class
-        A reference to the Model class of the currently selected model for this component type.
-        Provides a hook for calling functions like 'get_s_params'.
+        A reference to the Model class of the currently selected model for this
+        component type. Provides a hook for calling functions like 
+        'get_s_params'.
 
     Attributes
     ----------
     component_type : str
         The name of the component type.
     nets : list of ints
-        A list of all connected nets (required to be integers) following the same order that 
-        the device's port numbering scheme follows.
+        A list of all connected nets (required to be integers) following the 
+        same order that the device's port numbering scheme follows.
     lay_x : float
         The x-position of the component in the overall layout.
     lay_y : float
         The y-position of the component in the overall layout.
     port_count : int
-        The number of ports on the device, calculated by counting the number of connected nets.
-        This attribute is a property and is not settable.
+        The number of ports on the device, calculated by counting the number of
+        connected nets. This attribute is a property and is not settable.
 
     Methods
     -------
     set_model(key: str)
-        Class method for selecting a simulation model for the specified component.
+        Class method for selecting a simulation model for the specified 
+        component.
     get_s_params(*args, **kwargs) : np.array, np.array
-        Abstract method that each class implements. Each classes passes in the necessary parameters
-        to its model and returns the frequency and s-parameter matrices.
+        Abstract method that each class implements. Each classes passes in the
+        necessary parameters to its model and returns the frequency and 
+        s-parameter matrices.
     """
     component_type: str = None
     nets: list = []
@@ -136,6 +143,7 @@ class Component(ABC):
     def set_model(cls, key):
         cls._selected_model = key
         cls._model_ref = LOADED_MODELS[cls._simulation_models[cls._selected_model]] if cls._selected_model else None
+        cls._model_ref.about()
 
     @property
     def port_count(self):
@@ -153,8 +161,9 @@ class Component(ABC):
 
 
 class ebeam_wg_integral_1550(Component):
-    """This class represents a waveguide component in the netlist. All attributes can
-    be initialized as keyword arguments in the __init__ function.
+    """This class represents a waveguide component in the netlist. All 
+    attributes can be initialized as keyword arguments in the __init__ 
+    function.
 
     This class inherits from Component and inherits all of its data members.
 
@@ -175,11 +184,12 @@ class ebeam_wg_integral_1550(Component):
 
     _simulation_models = {
         'ANN Waveguide': 'wg_ann',
-        # 'EBeam Waveguide': 'wg1550_lumerical',
+        'EBeam Waveguide': 'wg1550_lumerical',
     }
 
     def __init__(self, *args, **kwargs):
-        """Initializes a ebeam_wg_integral_1550 dataclass, which inherits from Component.
+        """Initializes a ebeam_wg_integral_1550 dataclass, which inherits from
+        Component.
 
         Parameters
         ----------
@@ -214,13 +224,14 @@ class ebeam_wg_integral_1550(Component):
         height : float, optional
             Height of the waveguide in microns (um).
         delta_length :  : float, optional
-            Percentage difference in the length of the waveguide as a float (e.g. '0.1' -> 10%).
+            Percentage difference in the length of the waveguide as a float 
+            (e.g. '0.1' -> 10%).
 
         Returns
         -------
         (np.array, np.array)
-            A tuple; the first value is the frequency range, the second value is its
-            corresponding s-parameter matrix.
+            A tuple; the first value is the frequency range, the second value 
+            is its corresponding s-parameter matrix.
         """
         length = self.length if length is None else length
         width = self.width if width is None else width
@@ -231,8 +242,9 @@ class ebeam_wg_integral_1550(Component):
 
 
 class ebeam_bdc_te1550(Component):
-    """This class represents a bidirectional coupler component in the netlist. All attributes 
-    can be initialized as keyword arguments in the __init__ function.
+    """This class represents a bidirectional coupler component in the netlist.
+    All attributes can be initialized as keyword arguments in the __init__ 
+    function.
 
     This class inherits from Component and inherits all of its data members.
 
@@ -245,7 +257,8 @@ class ebeam_bdc_te1550(Component):
     }
     
     def __init__(self, *args, **kwargs):
-        """Initializes a ebeam_bdc_te1550 dataclass, which inherits from Component.
+        """Initializes a ebeam_bdc_te1550 dataclass, which inherits from 
+        Component.
 
         Parameters
         ----------
@@ -260,8 +273,9 @@ class ebeam_bdc_te1550(Component):
 
 
 class ebeam_gc_te1550(Component):
-    """This class represents a grating coupler component in the netlist. All attributes can
-    be initialized as keyword arguments in the __init__ function.
+    """This class represents a grating coupler component in the netlist. All 
+    attributes can be initialized as keyword arguments in the __init__ 
+    function.
 
     This class inherits from Component and inherits all of its data members.
 
@@ -274,7 +288,8 @@ class ebeam_gc_te1550(Component):
     }
     
     def __init__(self, *args, **kwargs):
-        """Initializes a ebeam_gc_te1550 dataclass, which inherits from Component.
+        """Initializes a ebeam_gc_te1550 dataclass, which inherits from 
+        Component.
 
         Parameters
         ----------
@@ -289,8 +304,9 @@ class ebeam_gc_te1550(Component):
 
 
 class ebeam_y_1550(Component):
-    """This class represents a Y-branch component in the netlist. All attributes can
-    be initialized as keyword arguments in the __init__ function.
+    """This class represents a Y-branch component in the netlist. All 
+    attributes can be initialized as keyword arguments in the __init__ 
+    function.
 
     This class inherits from Component and inherits all of its data members.
 
@@ -318,8 +334,9 @@ class ebeam_y_1550(Component):
 
 
 class ebeam_terminator_te1550(Component):
-    """This class represents a terminator component in the netlist. All attributes can
-    be initialized as keyword arguments in the __init__ function.
+    """This class represents a terminator component in the netlist. All 
+    attributes can be initialized as keyword arguments in the __init__ 
+    function.
 
     This class inherits from Component and inherits all of its data members.
 
@@ -332,7 +349,8 @@ class ebeam_terminator_te1550(Component):
     }
     
     def __init__(self, *args, **kwargs):
-        """Initializes a ebeam_terminator_te1550 dataclass, which inherits from Component.
+        """Initializes a ebeam_terminator_te1550 dataclass, which inherits from
+        Component.
 
         Parameters
         ----------
@@ -347,8 +365,9 @@ class ebeam_terminator_te1550(Component):
 
 
 class ebeam_dc_halfring_te1550(Component):
-    """This class represents a half-ring component in the netlist. All attributes can
-    be initialized as keyword arguments in the __init__ function.
+    """This class represents a half-ring component in the netlist. All 
+    attributes can be initialized as keyword arguments in the __init__ 
+    function.
 
     This class inherits from Component and inherits all of its data members.
 
@@ -361,7 +380,8 @@ class ebeam_dc_halfring_te1550(Component):
     }
     
     def __init__(self, *args, **kwargs):
-        """Initializes a ebeam_dc_halfring_te1550 dataclass, which inherits from Component.
+        """Initializes a ebeam_dc_halfring_te1550 dataclass, which inherits 
+        from Component.
 
         Parameters
         ----------
@@ -376,11 +396,8 @@ class ebeam_dc_halfring_te1550(Component):
 
 
 """
-
-IMPLEMENTATION CODE BELOW, PROCEED WITH CAUTION!
-
+BEGIN DO NOT ALTER
 """
-
 # Finish setting all class variables for component subclasses
 comp_subclasses = [class_ for class_ in Component.__subclasses__()]
 for class_ in comp_subclasses:
@@ -388,3 +405,6 @@ for class_ in comp_subclasses:
 
 def create_component_by_name(component_name: str):
     return getattr(sys.modules[__name__], component_name)()
+"""
+END DO NOT ALTER
+"""
