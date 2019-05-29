@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
-# from SiEPIC.ann.models.components import Component
+from SiEPIC.ann.models.components import Component
+from importlib import import_module
 
 class SettingsGUI(tk.Tk):
     def __init__(self):
@@ -8,7 +9,7 @@ class SettingsGUI(tk.Tk):
         self.withdraw()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-        self.title("Monte Carlo Simulation")
+        self.title("Settings")
 
         padx = 5
         pady = 5
@@ -20,8 +21,18 @@ class SettingsGUI(tk.Tk):
         notebook.pack(fill=tk.BOTH)
         
         models = tk.Frame(notebook, padx=padx, pady=pady)
-        tk.Label(models, text="Component").grid(row=0, column=0)
-        tk.Entry(models).grid(row=0, column=1)
+        mod = import_module('.models', 'SiEPIC.ann')
+        Comp = mod.components.Component
+        i = 0
+        selections = {}
+        for class_ in Comp.__subclasses__():
+            tk.Label(models, text=class_.__name__, justify=tk.LEFT, anchor='w').grid(row=i, column=0, sticky='ew')
+            selections[class_.__name__] = tk.StringVar(self)
+            selections[class_.__name__].set(class_._selected_model)
+            om = tk.OptionMenu(models, selections[class_.__name__], *class_._simulation_models.keys())
+            om.configure(width=25, anchor='w')
+            om.grid(row=i, column=1)
+            i += 1
         notebook.add(models, text="Models")
 
         self.after(0, self.deiconify)
@@ -31,6 +42,9 @@ class SettingsGUI(tk.Tk):
         self.quit()
         self.destroy()
 
+def settings_gui():
+    app = SettingsGUI()
+    app.mainloop()
+
 if __name__ == "__main__":
-    gui = SettingsGUI()
-    gui.mainloop()
+    settings_gui()

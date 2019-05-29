@@ -30,8 +30,8 @@ This file contains everything related to netlist generation and modeling.
 """
 
 import pya
-import SiEPIC.extend as se
-import SiEPIC.core as cor
+# import SiEPIC.extend as se
+# import SiEPIC.core as cor
 from SiEPIC.ann.models.components import Component, create_component_by_name
 import jsons
 import copy

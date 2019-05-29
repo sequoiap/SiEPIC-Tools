@@ -11,6 +11,7 @@ __all__ = [
     'simulation',
     'monte_carlo_simulation',
     'models',
+    'settings_gui',
 ]
 __version__ = '0.1'
 __author__ = 'Sequoia Ploeg, Hyrum Gunther'
