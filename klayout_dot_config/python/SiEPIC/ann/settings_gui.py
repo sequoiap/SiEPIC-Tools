@@ -24,20 +24,26 @@ class SettingsGUI(tk.Tk):
         mod = import_module('.models', 'SiEPIC.ann')
         Comp = mod.components.Component
         i = 0
-        selections = {}
+        self.references = {}
+        self.selections = {}
         for class_ in Comp.__subclasses__():
             tk.Label(models, text=class_.__name__, justify=tk.LEFT, anchor='w').grid(row=i, column=0, sticky='ew')
-            selections[class_.__name__] = tk.StringVar(self)
-            selections[class_.__name__].set(class_._selected_model)
-            om = tk.OptionMenu(models, selections[class_.__name__], *class_._simulation_models.keys())
+            self.references[class_.__name__] = class_
+            self.selections[class_.__name__] = tk.StringVar(self)
+            self.selections[class_.__name__].set(class_._selected_model)
+            om = tk.OptionMenu(models, self.selections[class_.__name__], *class_._simulation_models.keys())
             om.configure(width=25, anchor='w')
-            om.grid(row=i, column=1)
+            om.grid(row=i, column=1, padx=padx, pady=pady)
             i += 1
         notebook.add(models, text="Models")
 
         self.after(0, self.deiconify)
 
     def on_closing(self):
+        for key, val in self.selections.items():
+            if self.references[key]._selected_model != val.get():
+                self.references[key].set_model(val.get())
+
         self.withdraw()
         self.quit()
         self.destroy()
