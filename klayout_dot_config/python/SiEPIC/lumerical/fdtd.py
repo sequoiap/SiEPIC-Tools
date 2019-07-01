@@ -203,7 +203,7 @@ def generate_component_sparam(do_simulation = True, addto_CML = True, verbose = 
       set('y min bc','Metal'); set('y max bc','Metal'); \
       set('z min bc','%s'); set('z max bc','%s'); \
       setglobalsource('wavelength start',%s); setglobalsource('wavelength stop', %s); \
-      setglobalmonitor('frequency points',%s); set('simulation time', %s/c+400e-15); \
+      setglobalmonitor('frequency points',%s); set('simulation time', %s/c+1500e-15); \
       addmesh; set('override x mesh',0); set('override y mesh',0); set('override z mesh',1); set('z span', 0); set('dz', %s); set('z', %s); \
       ?'FDTD solver with mesh override added'; " % ( FDTDxmin,FDTDxmax,FDTDymin,FDTDymax,FDTDzspan, \
          Z_symmetry, FDTD_settings['Initial_Z-Boundary-Conditions'], \
@@ -558,7 +558,6 @@ def generate_component_sparam(do_simulation = True, addto_CML = True, verbose = 
                       leg{li} = 'S_%s_%s:%s - %s, %s'; \
                        " % ( Sparam_pin_max_modes[mode_selection_index.index(m)]+1, pins[Sparam_pin_max_modes[mode_selection_index.index(m)]].pin_name, in_pin.pin_name, mode_selection_index.index(m)+1, pin_h,pin_w) )
 
-
                 # Write XML file for INTC scripted compact model
                 # height and width are set to the first pin width/height
                 xml_out = '\
@@ -573,6 +572,9 @@ def generate_component_sparam(do_simulation = True, addto_CML = True, verbose = 
 </association>\n' % (pin_h, pin_w, os.path.basename(file_sparam))
                 fh.writelines(xml_out)
 
+        # Add legend to the Corner plots
+        lumapi.evalScript(_globals.FDTD, "legend(leg);\n")
+
     xml_out = '\
 </lumerical_lookup_table>'
     fh.writelines(xml_out)
@@ -582,8 +584,6 @@ def generate_component_sparam(do_simulation = True, addto_CML = True, verbose = 
     if verbose:
       print(" XML file: %s" % xml_filename)
 
-    # Add legend to the Corner plots
-    lumapi.evalScript(_globals.FDTD, "legend(leg);\n")
 
 
   if addto_CML:

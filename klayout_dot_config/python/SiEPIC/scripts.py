@@ -25,6 +25,7 @@ user_select_opt_in
 fetch_measurement_data_from_github
 measurement_vs_simulation
 resize waveguide
+replace_cell
 '''
 
 
@@ -59,6 +60,11 @@ def path_to_waveguide(params=None, cell=None, lv_commit=True, GUI=False, verbose
     warning = pya.QMessageBox()
     warning.setStandardButtons(pya.QMessageBox.Yes | pya.QMessageBox.Cancel)
     warning.setDefaultButton(pya.QMessageBox.Yes)
+    if not selected_paths:
+        warning.setText(
+            "Warning: Cannot make Waveguides - No Path objects selected or found in the layout.")
+        if(pya.QMessageBox_StandardButton(warning.exec_()) == pya.QMessageBox.Cancel):
+            return
     for obj in selected_paths:
         path = obj.shape.path
         path.unique_points()
@@ -83,16 +89,18 @@ def path_to_waveguide(params=None, cell=None, lv_commit=True, GUI=False, verbose
 
         path.snap(cell.find_pins())
         Dpath = path.to_dtype(TECHNOLOGY['dbu'])
-        width_devrec = max([wg['width'] for wg in params['wgs']]) + _globals.WG_DEVREC_SPACE * 2
+        if ('DevRec' not in [wg['layer'] for wg in params['wgs']]):
+            width_devrec = max([wg['width'] for wg in params['wgs']]) + _globals.WG_DEVREC_SPACE * 2
+            params['wgs'].append({'width': width_devrec, 'layer': 'DevRec', 'offset': 0.0})
         try:
             pcell = ly.create_cell("Waveguide", TECHNOLOGY['technology_name'], {"path": Dpath,
                                                                                 "radius": params['radius'],
                                                                                 "width": params['width'],
                                                                                 "adiab": params['adiabatic'],
                                                                                 "bezier": params['bezier'],
-                                                                                "layers": [wg['layer'] for wg in params['wgs']] + ['DevRec'],
-                                                                                "widths": [wg['width'] for wg in params['wgs']] + [width_devrec],
-                                                                                "offsets": [wg['offset'] for wg in params['wgs']] + [0]})
+                                                                                "layers": [wg['layer'] for wg in params['wgs']],
+                                                                                "widths": [wg['width'] for wg in params['wgs']],
+                                                                                "offsets": [wg['offset'] for wg in params['wgs']]})
             print("SiEPIC.scripts.path_to_waveguide(): Waveguide from %s, %s" %
                   (TECHNOLOGY['technology_name'], pcell))
         except:
@@ -104,9 +112,9 @@ def path_to_waveguide(params=None, cell=None, lv_commit=True, GUI=False, verbose
                                                                        "width": params['width'],
                                                                        "adiab": params['adiabatic'],
                                                                        "bezier": params['bezier'],
-                                                                       "layers": [wg['layer'] for wg in params['wgs']] + ['DevRec'],
-                                                                       "widths": [wg['width'] for wg in params['wgs']] + [width_devrec],
-                                                                       "offsets": [wg['offset'] for wg in params['wgs']] + [0]})
+                                                                       "layers": [wg['layer'] for wg in params['wgs']],
+                                                                       "widths": [wg['width'] for wg in params['wgs']],
+                                                                       "offsets": [wg['offset'] for wg in params['wgs']]})
                 print("SiEPIC.scripts.path_to_waveguide(): Waveguide from SiEPIC General, %s" % pcell)
             except:
                 pass
@@ -490,7 +498,7 @@ def snap_component():
                 pin_pairs = sorted([[pin_t, pin_s]
                                     for pin_t in pins_transient
                                     for pin_s in pins_selection
-                                    if (abs(pin_t.rotation - pin_s.rotation) % 360 - 180) < 1 and pin_t.type == _globals.PIN_TYPES.OPTICAL and pin_s.type == _globals.PIN_TYPES.OPTICAL],
+                                    if (abs(pin_t.rotation - pin_s.rotation) % 360 == 180) and pin_t.type == _globals.PIN_TYPES.OPTICAL and pin_s.type == _globals.PIN_TYPES.OPTICAL],
                                    key=lambda x: x[0].center.distance(x[1].center))
 
                 if pin_pairs:
@@ -666,7 +674,48 @@ def calibreDRC(params=None, cell=None):
         progress.format = "Finishing"
         pya.Application.instance().main_window().repaint()
 
-    elif version.find("3.") > -1:
+    elif (version.find("3.")>-1) & ('Darwin' in platform.system()):
+        import subprocess
+        cmd = subprocess.check_output
+
+        progress.format = "Uploading Layout and Scripts"
+        progress.set(2, True)
+        pya.Application.instance().main_window().repaint()
+
+        try:
+            c = ['ssh', server, 'mkdir', '-p', remote_path]
+            print(c)
+            out += cmd(c).decode('utf-8')
+            c = ['scp', os.path.join(local_path,local_file), '%s:%s' %(server, remote_path)]
+            print(c)
+            out += cmd(c).decode('utf-8')
+            c = ['scp',os.path.join(local_path,'run_calibre'),'%s:%s'%(server, remote_path)]
+            print(c)
+            out += cmd(c).decode('utf-8')
+            c = ['scp',os.path.join(local_path,'drc.cal'),'%s:%s'%(server, remote_path)]
+            print(c)
+            out += cmd(c).decode('utf-8')
+
+            progress.format = "Checking Layout for Errors"
+            progress.set(3, True)
+            pya.Application.instance().main_window().repaint()
+
+            c = ['ssh', server, 'cd',remote_path,';source','run_calibre']
+            print(c)
+            out += cmd(c).decode('utf-8')
+
+            progress.format = "Downloading Results"
+            progress.set(4, True)
+            pya.Application.instance().main_window().repaint()
+
+            c = ['scp','%s:%s/drc.rve'%(server, remote_path), os.path.join(local_path,results_file)]
+            print(c)
+            out += cmd(c).decode('utf-8')
+        except subprocess.CalledProcessError as e:
+            out += '\nError running ssh or scp commands. Please check that these programs are available.\n'
+            out += str(e.output)
+            
+    elif (version.find("3.")>-1) & ('Win' in platform.system()):
         import subprocess
         cmd = subprocess.check_output
 
@@ -710,6 +759,9 @@ def calibreDRC(params=None, cell=None):
     print(out)
     progress._destroy()
     if os.path.exists(results_pathfile):
+        pya.MessageBox.warning(
+            "Success", "Calibre DRC run complete. Results downloaded and available in the Marker Browser window.",  pya.MessageBox.Ok)
+
         rdb_i = lv.create_rdb("Calibre Verification")
         rdb = lv.rdb(rdb_i)
         rdb.load(results_pathfile)
@@ -1731,7 +1783,7 @@ def resize_waveguide():
 
             elif sys.platform.startswith('darwin'):
                     # OSX specific
-                titlefont = QFont("Arial", 13, QFont.Bold, False)
+                titlefont = QFont("Arial", 9, QFont.Bold, False)
 
             elif sys.platform.startswith('win'):
                 titlefont = QFont("Arial", 9, QFont.Bold, False)
@@ -1850,3 +1902,52 @@ def resize_waveguide():
             objlist.append(lf1text3)
             selection(None)
             wdg.show()
+
+
+
+'''
+Search and replace: cell_x with cell_y
+- load layout containing cell_y_name from cell_y_file
+- replace all cell_x_name instances with cell_y
+'''
+def replace_cell(layout, cell_x_name, cell_y_name, cell_y_file):
+    
+    # Load cell_y_name:
+    layout.read(cell_y_file)
+
+    # find cell name cell_x_name
+    cell_x = layout.cell(cell_x_name)
+    if cell_x == None:
+        # raise Exception("No cell '%s' found in layout." % cell_x_name)
+        print (' - layout %s does not contain cell %s' % (cell_y_file, cell_x_name) )
+        return
+    #print(" - found cell_x: %s" % cell_x.name)
+    # find cell name CELL_Y
+    cell_y = layout.cell(cell_y_name)
+    if cell_y == None:
+        raise Exception("No cell '%s' found in layout." % cell_y_name)
+    #print(" - found cell_y: %s" % cell_y.name)
+    # find caller cells
+    caller_cells = cell_x.caller_cells()
+    # loop through all caller cells:
+    for c in caller_cells:
+        cc = layout.cell(c)
+        #print("  - found caller cell: %s" % cc.name)
+        # find instaces of CELL_X in caller cell
+        itr = cc.each_inst()
+        try:
+            while True:
+                inst = next(itr)
+                #print("   - found inst: %s, %s" % (inst, inst.cell.name))
+                if inst.cell.name == cell_x_name:
+                    # replace with CELL_Y
+                    if inst.is_regular_array():
+                        ci = inst.cell_inst
+                        cc.replace(inst, pya.CellInstArray(cell_y.cell_index(),inst.trans, ci.a, ci.b, ci.na, ci.nb))
+                        print("    - replacing with cell array: %s" % (cell_y.name))
+                    else:
+                        cc.replace(inst, pya.CellInstArray(cell_y.cell_index(),inst.trans))
+                        print("    - replacing with cell: %s" % (cell_y.name))
+        except:
+            pass
+    cell_x.prune_cell()
