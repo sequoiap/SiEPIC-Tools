@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<klayout-macro>
+ <description>Simphony initialization</description>
+ <version/>
+ <category>pymacros</category>
+ <prolog/>
+ <epilog/>
+ <doc/>
+ <autorun>true</autorun>
+ <autorun-early>false</autorun-early>
+ <shortcut/>
+ <show-in-menu>true</show-in-menu>
+ <group-name/>
+ <menu-path>simphony_menu.beginning</menu-path>
+ <interpreter>python</interpreter>
+ <dsl-interpreter-name/>
+ <text>import sys
+import pya
+
+try:
+  import simphony
+except:
+  message = "Simphony must be installed in order for SiEPIC-Simphony integration to work."
+  pya.MessageBox.warning("Installation", message, pya.MessageBox.Ok)
+  print(message)
+  sys.exit()
+
+try:
+  import SiEPIC
+except:
+  message = "SiEPIC must be installed in order for SiEPIC-Simphony integration to work."
+  pya.MessageBox.warning("Installation", message, pya.MessageBox.Ok)
+  print(message)
+  sys.exit()
+
+try:
+  import SiEPIC_Simphony
+except:
+  message = "SiEPIC_Simphony must be installed in order for SiEPIC-Simphony integration to work."
+  pya.MessageBox.warning("Installation", message, pya.MessageBox.Ok)
+  print(message)
+  sys.exit()
+
+if sys.version_info[0] == 3:
+    import builtins as builtins
+elif sys.version_info[0] == 2:
+    import __builtin__ as builtins
+
+try:
+    builtins.SIMPHONY_ACTIONS
+except:
+    builtins.SIMPHONY_ACTIONS = []
+    import SiEPIC
+
+if sys.version_info[0] == 3:
+    if sys.version_info[1] &lt; 4:
+        from imp import reload
+    else:
+        from importlib import reload
+elif sys.version_info[0] == 2:
+    pass
+    
+SiEPIC_Simphony.setup.registerMenuItems()</text>
+</klayout-macro>

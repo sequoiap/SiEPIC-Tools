@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<klayout-macro>
+ <description>Export netlist</description>
+ <version/>
+ <category>pymacros</category>
+ <prolog/>
+ <epilog/>
+ <doc/>
+ <autorun>false</autorun>
+ <autorun-early>false</autorun-early>
+ <shortcut/>
+ <show-in-menu>false</show-in-menu>
+ <group-name>Files</group-name>
+ <menu-path>simphony_menu.end</menu-path>
+ <interpreter>python</interpreter>
+ <dsl-interpreter-name/>
+ <text>import pya
+
+# Enter your Python code here ..
+import os
+import tkinter as tk
+from tkinter import filedialog
+from simphony.netlist import ObjectModelNetlist as oml
+
+app = tk.Tk()
+app.withdraw()
+
+fileTypes = [("Netlist file","*.json")]
+options = {}
+options['initialdir'] = os.path.expanduser('~')
+options['filetypes'] = fileTypes
+options['parent'] = app
+filename = filedialog.asksaveasfilename(**options)
+if filename:
+    cell = pya.Application.instance().main_window().current_view().active_cellview().cell
+    _, _, ann_netlist_model = cell.spice_netlist_export_ann()
+    oml.save(filename, ann_netlist_model)
+
+app.destroy()</text>
+</klayout-macro>
