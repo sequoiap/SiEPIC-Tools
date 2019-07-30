@@ -104,7 +104,7 @@ class CircuitAnalysisGUI():
         self.schematic.grid(row=1, column=0)
 
     def set_controls(self):
-        options = self.simulation.external_ports()
+        options = self.simulation.external_ports
         self.first = tk.StringVar(self.parent)
         self.first.set(options[0])
         self.second = tk.StringVar(self.parent)
