@@ -3,7 +3,7 @@ __all__ = [
     'netlist',
     'single_port_simulation',
     'monte_carlo_simulation',
-    # 'multi_port_simulation',
+    'multi_port_simulation',
     'settings_gui',
     'config',
 ]
