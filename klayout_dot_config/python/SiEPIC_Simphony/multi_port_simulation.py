@@ -31,7 +31,6 @@ import os
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
 
 class CircuitAnalysisGUI(tk.Tk):
     # Some constants
@@ -121,15 +120,13 @@ class CircuitAnalysisGUI(tk.Tk):
         in_ports = [int(i) for i in self.in_port.get().split('.')]
         out_ports = [int(i) for i in self.out_port.get().split('.')]
         self.simulation.multi_input_simulation(inputs=in_ports)
-        plt.figure()
+        plt = Graph(self, "Figure")
         for output in out_ports:
             plt.plot(*self.get_magnitude_by_frequency_thz(output), label=("out_" + str(output)))
         plt.title('Multiple Input Simulation')
         plt.xlabel('Frequency (THz)')
         plt.ylabel('Gain')
-        plt.legend()
-        plt.draw()
-        plt.show()
+        plt.legend(True)
 
     def get_magnitude_by_frequency_thz(self, output_port):
         """

@@ -247,11 +247,11 @@ class CircuitAnalysisGUI():
         logging.debug("Entering update_magnitude()")
         if self.plotFrequency == True:
             logging.debug("plotFrequency == True")
-            self.magnitude.plot(*self.magnitude_by_frequency_THz(fromPort, toPort), name=name)
+            self.magnitude.plot(*self.magnitude_by_frequency_THz(fromPort, toPort), label=name)
             self.magnitude.xlabel('Frequency (THz)')
         else:
             logging.debug("plotFrequency == False")
-            # self.magnitude.plot(*self.simulation.getMagnitudeByWavelengthNm(fromPort, toPort), name=name)
+            # self.magnitude.plot(*self.simulation.getMagnitudeByWavelengthNm(fromPort, toPort), label=name)
             self.magnitude.xlabel('Wavelength (nm)')
         logging.debug("Exiting update_magnitude()")
 

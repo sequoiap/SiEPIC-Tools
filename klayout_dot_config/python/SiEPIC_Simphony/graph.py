@@ -461,7 +461,7 @@ class Graph:
     #                                                                       #
     #########################################################################
 
-    def plot(self, x: np.array, y: np.array, name: str = None):
+    def plot(self, x: np.array, y: np.array, fmt: str=None, label: str = None, **kwargs):
         """Plots x and y data on a Graph.
 
         Parameters
@@ -470,8 +470,8 @@ class Graph:
             The x axis values
         y : np.array
             The y axis values
-        name : str, optional
-            The name for this line (default = None). Line names are required 
+        label : str, optional
+            The label for this line (default = None). Line names are required 
             to be unique, and Graph raises a ValueError if the unique name 
             constraint is not satisfied.
 
@@ -481,19 +481,22 @@ class Graph:
             If the shapes of x or y are different.
         """
 
-        if x.shape == y.shape and name not in self.lines:
-            if name == None:
-                name = "Line " + str(self.line_counter)
+        if x.shape == y.shape and label not in self.lines:
+            if label == None:
+                label = "Line " + str(self.line_counter)
                 self.line_counter += 1
-            dataset = DataSet(x, y, name)
-            dataset.setObjectID(self.ax.plot(dataset.x, dataset.y))
+            dataset = DataSet(x, y, label)
+            if fmt:
+                dataset.setObjectID(self.ax.plot(dataset.x, dataset.y, fmt, label=label, **kwargs))
+            else: 
+                dataset.setObjectID(self.ax.plot(dataset.x, dataset.y, label=label, **kwargs))
             self.lines[dataset.name] = dataset
             self.legend()
             self.canvas.draw()
         else:
             if x.shape != y.shape:
                 raise ValueError("x and y array shapes do not match.")
-            if(name in self.lines):
+            if(label in self.lines):
                 raise ValueError("line with specified name already exists (unique constraint failed).")
             raise ValueError("Error in required arguments for plotting.")
 

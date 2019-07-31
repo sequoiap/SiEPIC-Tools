@@ -18,7 +18,7 @@ import os
 import tkinter as tk
 from tkinter import filedialog
 
-import matplotlib.pyplot as plt
+from .graph import Graph, DataSet, MenuItem
 import numpy as np
 from scipy.io import savemat
 from simphony.simulation import MonteCarloSimulation as mcs
@@ -131,7 +131,7 @@ class MonteCarloGUI(tk.Tk):
         dpin = int(self.in_port.get())
         dpout = int(self.out_port.get())
 
-        plt.figure(1)
+        plt = Graph(self, "Figure")
         for i  in range(sims):
             plt.plot(self.simulation.freq_array, 10*np.log10(abs(self.simulation.results[i, :, dpin, dpout])**2), 'b', alpha=0.1)
         plt.plot(self.simulation.freq_array,  10*np.log10(abs(self.simulation.s_parameters()[:, dpin, dpout])**2), 'k', linewidth=0.5)
@@ -139,8 +139,6 @@ class MonteCarloGUI(tk.Tk):
         plt.title(title)
         plt.xlabel('Frequency (Hz)')
         plt.ylabel('Gain (dB)')
-        plt.draw()
-        plt.show()
         
     def on_closing(self):
         self.withdraw()
