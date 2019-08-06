@@ -267,7 +267,8 @@ class CircuitAnalysisGUI():
 
     def phase_by_frequency_THz(self, from_port, to_port):
         freq = np.divide(self.simulation.freq_array, 1e12)
-        phase = np.rad2deg(np.unwrap(np.angle(self.simulation.s_parameters()[:,from_port,to_port])))
+        # phase = np.rad2deg(np.unwrap(np.angle(self.simulation.s_parameters()[:,from_port,to_port])))
+        phase = np.unwrap(np.angle(self.simulation.s_parameters()[:,from_port,to_port]))
         return freq, phase
     
     def phase_by_wavelength_nm(self, from_port, to_port):
@@ -278,7 +279,7 @@ class CircuitAnalysisGUI():
     def update_phase(self, fromPort=0, toPort=0, name=None):
         logging.debug("Entering update_phase()")
         if self.plotFrequency == True:
-            self.phase.plot(*self.phase_by_frequency_THz(fromPort, toPort), name)
+            self.phase.plot(*self.phase_by_frequency_THz(fromPort, toPort), label=name)
             self.phase.xlabel('Frequency (THz)')
         else:
             self.phase.plot(*self.simulation.getPhaseByWavelengthNm(fromPort, toPort), name)
