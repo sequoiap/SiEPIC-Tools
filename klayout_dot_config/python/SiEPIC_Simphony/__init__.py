@@ -15,9 +15,12 @@ import configparser
 from importlib import import_module
 import os
 import SiEPIC_Simphony.config as configure
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 def on_open():
-    print('Simphony Python Integration (CamachoLab)')
+    logging.info('Simphony Python Integration (CamachoLab)')
     try:
         config = configparser.ConfigParser()
         config.read(os.path.join(os.path.dirname(os.path.realpath(__file__)), "settings.ini"))
@@ -26,7 +29,7 @@ def on_open():
         for item in selections:
             configure.set_model(item, selections[item])
     except:
-        print("Persistent settings could not be read.")
+        logging.warning("Persistent settings could not be read.")
 
 def on_close():
     config = configparser.ConfigParser()
@@ -38,7 +41,7 @@ def on_close():
 
     with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "settings.ini"), 'w') as configfile:
         config.write(configfile)
-    print("Simphony Integration Closed")
+    logging.info("Simphony Integration Closed")
 
 on_open()
 
