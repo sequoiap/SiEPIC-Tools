@@ -28,5 +28,6 @@ grep -q -F '/GSiP' $INTC/INTERCONNECT.ini || sed -i .bak '/Design/a\
 GSiP='$SRC'/SiEPIC-Tools/Lumerical_CML_GSiP/GSiP
 ' $INTC/INTERCONNECT.ini
 
-#cd $SRC/SiEPIC-Tools/klayout_dot_config/python/SiEPIC/ann
-#bash install.sh
+echo "SiEPIC-Simphony requires python3-tk to be installed on your system."
+sudo apt-get install python3-tk
+python3 -m pip install -r requirements.txt
