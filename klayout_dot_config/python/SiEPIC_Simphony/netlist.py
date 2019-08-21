@@ -4,6 +4,7 @@ import pya
 import simphony.core as core
 from simphony.DeviceLibrary import ebeam as devices
 import SiEPIC_Simphony
+import SiEPIC_Simphony.config as conf
 # import simphony.errors as err
 
 def spice_netlist_export(self) -> (str, str, core.Netlist):
@@ -202,6 +203,13 @@ class NetlistParser:
         component.nets = nets
         if any(x < 0 for x in nets):
             self.external_list.append([component.model.component_type, pos, nets])
+        if component.model.component_type == devices.ebeam_wg_integral_1550.component_type:
+            if conf.ne is not None:
+                component.extras['ne'] = conf.ne
+            if conf.ng is not None:
+                component.extras['ng'] = conf.ng
+            if conf.nd is not None:
+                component.extras['nd'] = conf.nd
         self.component_list.append(component)
 
 def strToSci(number) -> float:

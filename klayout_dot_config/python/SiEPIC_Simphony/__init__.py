@@ -5,6 +5,7 @@ __all__ = [
     'monte_carlo_simulation',
     'multi_port_simulation',
     'settings_gui',
+    'wg_settings_gui',
     'config',
 ]
 
