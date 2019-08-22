@@ -145,6 +145,7 @@ class CircuitAnalysisGUI():
         self.fig.clear()
         self.ax = self.fig.add_subplot(111)
         self.draw()
+        self.fig.tight_layout()
 
     def draw(self):
         for comp in self.components:
