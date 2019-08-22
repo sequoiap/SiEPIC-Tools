@@ -48,6 +48,7 @@ def set_model(component_type, model_name):
 #
 #
 
+wl0 = None
 ne = None
 ng = None
 nd = None

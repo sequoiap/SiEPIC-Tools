@@ -204,6 +204,8 @@ class NetlistParser:
         if any(x < 0 for x in nets):
             self.external_list.append([component.model.component_type, pos, nets])
         if component.model.component_type == devices.ebeam_wg_integral_1550.component_type:
+            if conf.wl0 is not None:
+                component.extras['lam0'] = conf.wl0
             if conf.ne is not None:
                 component.extras['ne'] = conf.ne
             if conf.ng is not None:
