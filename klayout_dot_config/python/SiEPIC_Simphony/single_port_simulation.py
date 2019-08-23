@@ -18,6 +18,7 @@ and exporting the results.
 """
 
 import pya
+import pickle
 import tkinter as tk
 from tkinter import filedialog
 import logging
@@ -65,9 +66,9 @@ class CircuitAnalysisGUI():
         self.init_figures()
 
         cell = pya.Application.instance().main_window().current_view().active_cellview().cell
-        _, _, ann_netlist_model, self.components = cell.spice_netlist_export_ann()
+        _, _, self.ann_netlist_model, self.components = cell.spice_netlist_export_ann()
 
-        self.simulation = Simulation(ann_netlist_model)
+        self.simulation = Simulation(self.ann_netlist_model)
         
         self.plotFrequency = True
 
@@ -89,6 +90,7 @@ class CircuitAnalysisGUI():
         # filemenu.add_command(label="Save")
         filemenu.add_command(label="Open folder")#, command=self.open_folder)
         filemenu.add_command(label="Export s-matrix", command=self.export_s_matrix)
+        filemenu.add_command(label="Export netlist", command=self.export_netlist)
         filemenu.add_command(label="Exit", command=self.parent.on_closing)
         menubar.add_cascade(label="File", menu=filemenu)
         
@@ -171,6 +173,16 @@ class CircuitAnalysisGUI():
                 sio.savemat(filename, {'s_mat' : s_mat, 'freq' : freq})
             elif ext == ".npz":
                 np.savez(filename, s_mat, freq)
+
+    def export_netlist(self):
+        fileTypes = [("Pickle file","*.pkl"),]
+        options = {}
+        options['initialdir'] = os.path.expanduser('~')
+        options['filetypes'] = fileTypes
+        options['parent'] = self.parent
+        filename = filedialog.asksaveasfilename(**options)
+        with open(filename, 'wb') as output:
+            pickle.dump(self.ann_netlist_model, output, pickle.HIGHEST_PROTOCOL)
         
     def plotByFrequency(self):
         if not self.plotFrequency:
