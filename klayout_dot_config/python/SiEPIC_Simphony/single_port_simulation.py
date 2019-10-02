@@ -168,7 +168,7 @@ class CircuitAnalysisGUI():
         filename = filedialog.asksaveasfilename(**options)
         if filename:
             _, ext = os.path.splitext(filename)
-            s_mat, freq = self.simulation.exportSMatrix()
+            s_mat, freq = self.simulation.s_parameters(), self.simulation.freq_array
             if ext == ".mat":
                 sio.savemat(filename, {'s_mat' : s_mat, 'freq' : freq})
             elif ext == ".npz":
